@@ -1,15 +1,19 @@
 package com.agnostik.agnostik_app.authentication;
 
 
+import com.agnostik.agnostik_app.core.exception.AppInvalidCredentialsException;
+import com.agnostik.agnostik_app.core.exception.AppObjectAlreadyExistsException;
 import com.agnostik.agnostik_app.dto.AuthenticationRequestDTO;
 import com.agnostik.agnostik_app.dto.AuthenticationResponseDTO;
 import com.agnostik.agnostik_app.dto.UserRegisterDTO;
 import com.agnostik.agnostik_app.model.User;
 import com.agnostik.agnostik_app.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthenticationService {
@@ -20,8 +24,11 @@ public class AuthenticationService {
 
     public AuthenticationResponseDTO register(UserRegisterDTO dto){
 
+        log.info("Register attempt for username='{}'", dto.getUsername());
+
         if (userRepository.existsByUsername(dto.getUsername())){
-            throw new IllegalArgumentException("username already exists");
+            log.warn("Register failed: username '{}' already exists", dto.getUsername());
+            throw new AppObjectAlreadyExistsException("Username: " + dto.getUsername() + " already exists");
         }
 
         User user = new User();
@@ -40,14 +47,21 @@ public class AuthenticationService {
 
     public AuthenticationResponseDTO login (AuthenticationRequestDTO dto) {
 
+        log.info("Login attempt for username='{}'", dto.getUsername());
+
         User user = userRepository.findByUsername(dto.getUsername())
-                .orElseThrow( () -> new IllegalArgumentException("bad credentials"));
+                .orElseThrow( () -> {
+                    log.warn("Login failed: username '{}' not found", dto.getUsername());
+                    return new AppInvalidCredentialsException();
+                });
 
         if (!passwordEncoder.matches(dto.getPassword(), user.getPasswordHash())) {
-            throw new IllegalArgumentException("bad credentials");
+            log.warn("Login failed: wrong password for username='{}'", dto.getUsername());
+            throw new AppInvalidCredentialsException();
         }
 
         String token = jwtService.generateToken(user.getId());
+        log.info("Login success: username='{}' (id={})", user.getUsername(), user.getId());
 
         return AuthenticationResponseDTO.builder()
                 .token(token)
