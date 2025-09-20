@@ -28,7 +28,7 @@ public class AuthenticationService {
 
         if (userRepository.existsByUsername(dto.getUsername())){
             log.warn("Register failed: username '{}' already exists", dto.getUsername());
-            throw new AppObjectAlreadyExistsException("Username: " + dto.getUsername() + " already exists");
+            throw new AppObjectAlreadyExistsException("Username: '" + dto.getUsername() + "' already exists");
         }
 
         User user = new User();
