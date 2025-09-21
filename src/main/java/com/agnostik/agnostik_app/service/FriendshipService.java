@@ -1,6 +1,5 @@
 package com.agnostik.agnostik_app.service;
 
-import com.agnostik.agnostik_app.core.exception.AppGenericException;
 import com.agnostik.agnostik_app.core.exception.AppObjectAlreadyExistsException;
 import com.agnostik.agnostik_app.core.exception.AppObjectInvalidArgumentException;
 import com.agnostik.agnostik_app.model.Friendship;
@@ -15,7 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class FriendShipService {
+public class FriendshipService {
 
     private final FriendshipRepository friendshipRepository;
     private final UserRepository userRepository;
@@ -28,7 +27,7 @@ public class FriendShipService {
     }
 
     @Transactional
-    public Friendship createFriendship(Long a, Long b){
+    public void createFriendship(Long a, Long b){
         if(a == null || b == null) throw new AppObjectInvalidArgumentException("NULL_USER_ID", "User Id cannot be null");
         if(a.equals(b)) throw new AppObjectInvalidArgumentException("SAME_USER", "User cannot be friend with themselves");
 
@@ -49,11 +48,11 @@ public class FriendShipService {
         friendship.setUser1(user1);
         friendship.setUser2(user2);
 
-        Friendship saved = friendshipRepository.save(friendship);
+        friendshipRepository.save(friendship);
         log.info("Friendship created between users with Ids: {}, {}", smallerId, largerId);
 
 
-        return saved;
+
 
 
     }
