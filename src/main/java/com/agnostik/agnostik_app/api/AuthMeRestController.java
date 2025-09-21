@@ -4,6 +4,8 @@ import com.agnostik.agnostik_app.dto.UserReadOnlyDTO;
 import com.agnostik.agnostik_app.model.User;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -11,9 +13,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/auth")
 public class AuthMeRestController {
 
-    public ResponseEntity<UserReadOnlyDTO> me(Authentication authentication){
+    @GetMapping("/me")
+    public UserReadOnlyDTO me(@AuthenticationPrincipal User me){
 
-        User user = (User) authentication.getPrincipal();
-        return ResponseEntity.ok(new UserReadOnlyDTO(user.getUsername()));
+        return UserReadOnlyDTO.from(me);
     }
 }
