@@ -2,6 +2,7 @@ package com.agnostik.agnostik_app.service;
 
 import com.agnostik.agnostik_app.core.exception.AppGenericException;
 import com.agnostik.agnostik_app.core.exception.AppObjectAlreadyExistsException;
+import com.agnostik.agnostik_app.core.exception.AppObjectInvalidArgumentException;
 import com.agnostik.agnostik_app.model.Friendship;
 import com.agnostik.agnostik_app.model.User;
 import com.agnostik.agnostik_app.repository.FriendshipRepository;
@@ -21,15 +22,15 @@ public class FriendShipService {
 
     @Transactional(readOnly = true)
     public boolean areFriends(Long a, Long b){
-        if (a == null || b == null) throw new IllegalArgumentException("NULL_USER_ID");
+        if (a == null || b == null) throw new AppObjectInvalidArgumentException("NULL_USER", "User cannot be null");
         if (a.equals(b)) return false;
         return friendshipRepository.areFriends(a,b);
     }
 
     @Transactional
     public Friendship createFriendship(Long a, Long b){
-        if(a == null || b == null) throw new IllegalArgumentException("NULL_USER_ID");
-        if(a.equals(b)) throw new IllegalArgumentException("SAME_USER");
+        if(a == null || b == null) throw new AppObjectInvalidArgumentException("NULL_USER_ID", "User Id cannot be null");
+        if(a.equals(b)) throw new AppObjectInvalidArgumentException("SAME_USER", "User cannot be friend with themselves");
 
         Long smallerId = Math.min(a, b);
         Long largerId = Math.max(a, b);
