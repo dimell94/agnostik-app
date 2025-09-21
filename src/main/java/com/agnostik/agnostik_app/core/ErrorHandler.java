@@ -2,6 +2,7 @@ package com.agnostik.agnostik_app.core;
 
 import com.agnostik.agnostik_app.core.exception.AppInvalidCredentialsException;
 import com.agnostik.agnostik_app.core.exception.AppObjectAlreadyExistsException;
+import com.agnostik.agnostik_app.core.exception.AppObjectInvalidArgumentException;
 import com.agnostik.agnostik_app.dto.ResponseMessageDTO;
 import jakarta.validation.ValidationException;
 import lombok.extern.slf4j.Slf4j;
@@ -51,6 +52,13 @@ public class ErrorHandler {
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(new ResponseMessageDTO("INTERNAL_ERROR", "Something went wrong."));
+    }
+
+    @ExceptionHandler(AppObjectInvalidArgumentException.class)
+    public ResponseEntity<ResponseMessageDTO> handleInvalidArgument(AppObjectInvalidArgumentException e) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(new ResponseMessageDTO(e.getCode(), e.getMessage()));
     }
 
 }
