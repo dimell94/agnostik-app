@@ -5,6 +5,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -48,9 +49,12 @@ public class JwtService {
         return extractAllClaims(token).getExpiration().before(new Date());
     }
 
+
+
+
     public boolean isTokenValid(String token, Long userId){
         final String subject = extractSubject(token);
-        return (subject.equals(userId.toString()) && isTokenExpired(token));
+        return (subject.equals(userId.toString()) && !isTokenExpired(token));
 
     }
 
