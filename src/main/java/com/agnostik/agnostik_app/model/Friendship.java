@@ -25,7 +25,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Check(constraints = "user1_id < user2_id")
-public class FriendShip {
+public class Friendship {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
