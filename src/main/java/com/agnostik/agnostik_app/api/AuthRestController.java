@@ -5,6 +5,7 @@ import com.agnostik.agnostik_app.authentication.AuthenticationService;
 import com.agnostik.agnostik_app.dto.AuthenticationRequestDTO;
 import com.agnostik.agnostik_app.dto.AuthenticationResponseDTO;
 import com.agnostik.agnostik_app.dto.UserRegisterDTO;
+import com.agnostik.agnostik_app.service.PresenceService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthRestController {
 
     private final AuthenticationService authService;
+    private final PresenceService presenceService;
 
     @PostMapping("/register")
     public ResponseEntity<AuthenticationResponseDTO> register(
@@ -31,6 +33,7 @@ public class AuthRestController {
     public ResponseEntity<AuthenticationResponseDTO> login(
             @Valid @ RequestBody AuthenticationRequestDTO dto) {
         AuthenticationResponseDTO response = authService.login(dto);
+        presenceService.join(response.getUserId());
         return ResponseEntity.ok(response);
     }
 }
