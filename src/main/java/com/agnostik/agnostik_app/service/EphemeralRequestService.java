@@ -73,7 +73,7 @@ public class EphemeralRequestService {
         return Optional.ofNullable(requests.get(k));
     }
 
-    public void cancelRequest(long a, long b){
+    public void cancel(long a, long b){
         requests.remove(key(a,b));
         log.info("Request canceled between {} and {}",a, b);
     }
