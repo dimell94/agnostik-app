@@ -1,5 +1,7 @@
 package com.agnostik.agnostik_app.service;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -91,18 +93,14 @@ public class PresenceService {
         log.info("User {} unlocked", userId);
     }
 
+    @Data
+    @AllArgsConstructor
     public static class Neighbors {
         public final Long leftUserId;
         public final boolean leftLocked;
         public final Long rightUserId;
-        public final boolean righLocked;
+        public final boolean rightLocked;
 
-        public Neighbors(Long leftUserId, boolean leftLocked, Long rightUserId, boolean rightLocked){
-            this.leftUserId = leftUserId;
-            this.leftLocked = leftLocked;
-            this.rightUserId = rightUserId;
-            this.righLocked = rightLocked;
-        }
     }
 
     public Neighbors getNeighbors(long userId){

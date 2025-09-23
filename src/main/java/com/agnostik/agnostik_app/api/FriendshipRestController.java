@@ -29,16 +29,16 @@ public class FriendshipRestController {
         return Map.of("friends", friends);
     }
 
-    public ResponseEntity<Map<String, Object>> create(@PathVariable Long otherUserId, @AuthenticationPrincipal User me){
-        friendshipService.createFriendship(me.getId(), otherUserId);
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(Map.of(
-                        "success", true,
-                        "message", "Friendship created",
-                        "user1Id", me.getId(),
-                        "user2Id", otherUserId
-                ));
-    }
+//    public ResponseEntity<Map<String, Object>> create(@PathVariable Long otherUserId, @AuthenticationPrincipal User me){
+//        friendshipService.createFriendship(me.getId(), otherUserId);
+//        return ResponseEntity.status(HttpStatus.CREATED)
+//                .body(Map.of(
+//                        "success", true,
+//                        "message", "Friendship created",
+//                        "user1Id", me.getId(),
+//                        "user2Id", otherUserId
+//                ));
+//    }
 
 
 
