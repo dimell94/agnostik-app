@@ -61,6 +61,62 @@ public class PresenceService {
         log.info("User {} unlocked", userId);
     }
 
+    public boolean moveRight(long userId){
+        synchronized (corridorLock){
+            Integer iObj = indexByUser.get(userId);
+            if (iObj == null) return false;
+            int i = iObj;
+
+            if (i == corridor.size() - 1) return false;
+
+            Long right = corridor.get(i + 1);
+            if(!locked.getOrDefault(right, false)){
+                swapPositions(i, i + 1);
+                return true;
+            }
+
+            int j = i + 1;
+            while (j < corridor.size() && locked.getOrDefault(corridor.get(j), false)){
+                j++;
+            }
+
+            if (j == corridor.size()) return false;
+
+            moveUser(i, j);
+            return true;
+        }
+    }
+
+    public boolean moveLeft(long userId){
+        synchronized (corridorLock){
+            Integer iObj = indexByUser.get(userId);
+            if (iObj == null) return false;
+            int i = iObj;
+
+            if (i == 0) return false;
+
+            Long left = corridor.get(i - 1);
+            if(!locked.getOrDefault(left, false)){
+                swapPositions(i, i -1);
+                return true;
+            }
+
+            int j = i - 1;
+            while(j > 0 && locked.getOrDefault(corridor.get(j), false)){
+                j--;
+            }
+
+            if(j < 0) return false;
+
+            moveUser(i, j + 1);
+            return true;
+
+
+        }
+    }
+
+
+
     @Data
     @AllArgsConstructor
     public static class Neighbors {
@@ -93,6 +149,24 @@ public class PresenceService {
 
     public boolean isLocked (long userId){
         return Boolean.TRUE.equals(locked.get(userId));
+    }
+
+    private void swapPositions(int i, int j){
+        Long u1 = corridor.get(i);
+        Long u2 = corridor.get(j);
+        corridor.set(i, u2);
+        corridor.set(j, u1);
+        indexByUser.put(u1, j);
+        indexByUser.put(u2, i);
+    }
+
+    private void moveUser(int from, int to){
+        Long user = corridor.remove(from);
+        corridor.add(to, user);
+
+        for (int i = Math.min(from, to); i < corridor.size(); i++){
+            indexByUser.put(corridor.get(i), i);
+        }
     }
 
 
