@@ -32,7 +32,7 @@ public class EphemeralRequestService {
         return min + ":" + max;
     }
 
-    public synchronized void sendRequest(long senderId, long receiverId){
+    public synchronized void send(long senderId, long receiverId){
 
         var neighbors = presenceService.getNeighbors(senderId);
 
@@ -56,7 +56,7 @@ public class EphemeralRequestService {
     }
 
 
-    public Optional<Request> getRequest(long a, long b){
+    public Optional<Request> get(long a, long b){
         String k = key(a, b);
 
         var neighbors = presenceService.getNeighbors(a);
@@ -79,11 +79,11 @@ public class EphemeralRequestService {
     }
 
     public boolean hasOutgoing(long userId, long neighborId){
-        return getRequest(userId, neighborId).map(r -> r.senderId == userId).orElse(false);
+        return get(userId, neighborId).map(r -> r.senderId == userId).orElse(false);
     }
 
     public boolean hasIncoming(long userId, long neighborId){
-        return getRequest(userId, neighborId).map(r -> r.receiverId == userId).orElse(false);
+        return get(userId, neighborId).map(r -> r.receiverId == userId).orElse(false);
     }
 
     public void removeRequest(long a, long b){
