@@ -18,18 +18,14 @@ public class PresenceService {
     private final List<Long> corridor = new ArrayList<>();
     private final Object corridorLock = new Object();
     private final Map<Long, Boolean> locked = new ConcurrentHashMap<>();
-    private final Set<String> protectedPairs = ConcurrentHashMap.newKeySet();
+    private final Map<Long, Integer> indexByUser = new ConcurrentHashMap<>();
 
-    private String pairKey(long a, long b){
-        long min = Math.min(a, b);
-        long max = Math.max(a, b);
-        return min + ":" + max;
-    }
 
     public void join(long userId){
         synchronized (corridorLock){
             if (!corridor.contains(userId)){
                 corridor.add(userId);
+                indexByUser.put(userId, corridor.size() - 1);
                 locked.putIfAbsent(userId, false);
                 log.info("User {} joined (size={}", userId, corridor.size());
 
@@ -41,13 +37,13 @@ public class PresenceService {
         synchronized (corridorLock){
             int idx = corridor.indexOf(userId);
             if (idx >= 0){
-                Long left = (idx - 1) >= 0 ? corridor.get(idx - 1) : null;
-                Long right = (idx + 1) <= corridor.size() ? corridor.get(idx + 1) : null;
-
-                if (left != null) protectedPairs.remove(pairKey(left, userId));
-                if (right != null) protectedPairs.remove(pairKey(userId, right));
-
                 corridor.remove(idx);
+                indexByUser.remove(userId);
+
+                for(int i = idx; i < corridor.size(); i++){
+                    indexByUser.put(corridor.get(i), i);
+                }
+
                 locked.remove(userId);
 
                 log.info("User {} left (size={})", userId, corridor.size());
@@ -57,39 +53,11 @@ public class PresenceService {
 
     public void lock (long userId){
         locked.put(userId, true);
-
-        synchronized (corridorLock){
-            int idx = corridor.indexOf(userId);
-
-            Long left = (idx - 1) >= 0 ? corridor.get(idx - 1) : null;
-            Long right = (idx + 1) <= corridor.size() ? corridor.get(idx + 1) : null;
-
-            if (left != null && Boolean.TRUE.equals(locked.get(left))){
-                protectedPairs.add(pairKey(left, userId));
-            }
-
-            if (right != null && Boolean.TRUE.equals(locked.get(right))){
-                protectedPairs.add(pairKey(userId, right));
-            }
-        }
         log.info("User {} locked", userId);
     }
 
     public void unlock (long userId){
         locked.put(userId, false);
-
-        synchronized (corridorLock){
-            int idx = corridor.indexOf(userId);
-
-            if (idx >= 0){
-                Long left = (idx - 1) >= 0 ? corridor.get(idx - 1) : null;
-                Long right = (idx + 1) <= corridor.size() ? corridor.get(idx + 1) : null;
-
-                if (left != null) protectedPairs.remove(pairKey(left, userId));
-                if (right != null) protectedPairs.remove(pairKey(userId, right));
-            }
-        }
-
         log.info("User {} unlocked", userId);
     }
 
@@ -121,11 +89,11 @@ public class PresenceService {
         }
     }
 
-    public boolean canInterleave(long a, long b){
-        return !protectedPairs.contains(pairKey(a, b));
-    }
+
 
     public boolean isLocked (long userId){
         return Boolean.TRUE.equals(locked.get(userId));
     }
+
+
 }
