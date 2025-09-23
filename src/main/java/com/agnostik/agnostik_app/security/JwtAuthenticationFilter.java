@@ -2,6 +2,8 @@ package com.agnostik.agnostik_app.security;
 
 
 import com.agnostik.agnostik_app.authentication.JwtService;
+import com.agnostik.agnostik_app.dto.UserReadOnlyDTO;
+import com.agnostik.agnostik_app.model.User;
 import com.agnostik.agnostik_app.repository.UserRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -47,12 +49,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 Long userId = Long.parseLong(subject);
 
+
                 var user = userRepository.findById(userId).orElse(null);
 
+
+
                 if (user != null && jwtService.isTokenValid(token, userId)) {
+                    UserReadOnlyDTO principal = UserReadOnlyDTO.from(user);
 
                     UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                            user, null, Collections.emptyList());
+                            principal, null, Collections.emptyList());
 
                     authentication.setDetails(
                         new WebAuthenticationDetailsSource().buildDetails(request));

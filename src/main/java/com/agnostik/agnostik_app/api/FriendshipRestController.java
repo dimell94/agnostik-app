@@ -1,5 +1,6 @@
 package com.agnostik.agnostik_app.api;
 
+import com.agnostik.agnostik_app.dto.UserReadOnlyDTO;
 import com.agnostik.agnostik_app.model.User;
 import com.agnostik.agnostik_app.service.FriendshipService;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +24,7 @@ public class FriendshipRestController {
     private final FriendshipService friendshipService;
 
     @GetMapping("/status/{otherUserId}")
-    public Map<String, Boolean> status(@PathVariable Long otherUserId, @AuthenticationPrincipal User me) {
+    public Map<String, Boolean> status(@PathVariable Long otherUserId, @AuthenticationPrincipal UserReadOnlyDTO me) {
         boolean friends = friendshipService.areFriends(me.getId(), otherUserId);
 
         return Map.of("friends", friends);

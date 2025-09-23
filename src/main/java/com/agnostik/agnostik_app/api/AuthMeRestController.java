@@ -14,8 +14,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthMeRestController {
 
     @GetMapping("/me")
-    public UserReadOnlyDTO me(@AuthenticationPrincipal User me){
+    public UserReadOnlyDTO me(@AuthenticationPrincipal UserReadOnlyDTO me){
 
-        return UserReadOnlyDTO.from(me);
+        return me;
     }
 }
