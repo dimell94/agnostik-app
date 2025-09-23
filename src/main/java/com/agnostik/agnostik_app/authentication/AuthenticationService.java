@@ -47,6 +47,7 @@ public class AuthenticationService {
         return AuthenticationResponseDTO.builder()
                 .token(token)
                 .username(user.getUsername())
+                .userId(user.getId())
                 .build();
     }
 
@@ -71,6 +72,7 @@ public class AuthenticationService {
         return AuthenticationResponseDTO.builder()
                 .token(token)
                 .username(user.getUsername())
+                .userId(user.getId())
                 .build();
     }
 }
