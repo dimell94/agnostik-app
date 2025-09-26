@@ -20,6 +20,14 @@ public class PresenceService {
     private final Map<Long, Boolean> locked = new ConcurrentHashMap<>();
     private final Map<Long, Integer> indexByUser = new ConcurrentHashMap<>();
 
+    @Data
+    @AllArgsConstructor
+    public static class MoveResult {
+        private final long userId;
+        private final int fromIndex;
+        private final int toIndex;
+    }
+
 
     public void join(long userId){
         synchronized (corridorLock){
@@ -61,18 +69,18 @@ public class PresenceService {
         log.info("User {} unlocked", userId);
     }
 
-    public boolean moveRight(long userId){
+    public MoveResult moveRight(long userId){
         synchronized (corridorLock){
             Integer iObj = indexByUser.get(userId);
-            if (iObj == null) return false;
+            if (iObj == null) return null;
             int i = iObj;
 
-            if (i == corridor.size() - 1) return false;
+            if (i == corridor.size() - 1) return null;
 
             Long right = corridor.get(i + 1);
             if(!locked.getOrDefault(right, false)){
                 swapPositions(i, i + 1);
-                return true;
+                return new MoveResult(userId, i, i + 1);
             }
 
             int j = i + 1;
@@ -80,25 +88,25 @@ public class PresenceService {
                 j++;
             }
 
-            if (j == corridor.size()) return false;
+            if (j == corridor.size()) return null;
 
             moveUser(i, j);
-            return true;
+            return new MoveResult(userId, i, j);
         }
     }
 
-    public boolean moveLeft(long userId){
+    public MoveResult moveLeft(long userId){
         synchronized (corridorLock){
             Integer iObj = indexByUser.get(userId);
-            if (iObj == null) return false;
+            if (iObj == null) return null;
             int i = iObj;
 
-            if (i == 0) return false;
+            if (i == 0) return null;
 
             Long left = corridor.get(i - 1);
             if(!locked.getOrDefault(left, false)){
                 swapPositions(i, i -1);
-                return true;
+                return new MoveResult(userId, i, i - 1 );
             }
 
             int j = i - 1;
@@ -106,10 +114,10 @@ public class PresenceService {
                 j--;
             }
 
-            if(j < 0) return false;
+            if(j < 0) return null;
 
             moveUser(i, j + 1);
-            return true;
+            return  new MoveResult(userId, i, j + 1);
 
 
         }

@@ -41,8 +41,8 @@ public class PresenceRestController {
 
     @PostMapping("/moveLeft")
     public ResponseEntity<?> moveLeft(@AuthenticationPrincipal UserReadOnlyDTO me){
-        boolean moved = presenceService.moveLeft(me.getId());
-        if (!moved){
+         var moveResult = presenceService.moveLeft(me.getId());
+        if (moveResult == null){
             return ResponseEntity.status(409).body("CANNOT_MOVE_LEFT");
         }
 
@@ -51,8 +51,8 @@ public class PresenceRestController {
 
     @PostMapping("/moveRight")
     public ResponseEntity<?> moveRight(@AuthenticationPrincipal UserReadOnlyDTO me){
-        boolean moved = presenceService.moveRight(me.getId());
-        if (!moved){
+        var moved = presenceService.moveRight(me.getId());
+        if (moved == null){
             return ResponseEntity.status(409).body("CANNOT_MOVE_RIGHT");
         }
 
