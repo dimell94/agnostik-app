@@ -1,5 +1,6 @@
 package com.agnostik.agnostik_app.service;
 
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -174,5 +175,17 @@ public class PresenceService {
         }
     }
 
+    public int getMyIndex(Long userId){
+        synchronized (corridorLock){
+            return corridor.indexOf(userId);
+        }
+
+    }
+
+    public int getCorridorSize(){
+        synchronized (corridorLock) {
+            return corridor.size();
+        }
+    }
 
 }
