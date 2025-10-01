@@ -1,8 +1,10 @@
 package com.agnostik.agnostik_app.api;
 
+import com.agnostik.agnostik_app.dto.SnapshotDTO;
 import com.agnostik.agnostik_app.dto.UserReadOnlyDTO;
 import com.agnostik.agnostik_app.model.User;
 import com.agnostik.agnostik_app.service.PresenceService;
+import com.agnostik.agnostik_app.service.SnapshotService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class PresenceRestController {
 
     private final PresenceService presenceService;
+    private final SnapshotService snapshotService;
 
     @PostMapping("/leave")
     public ResponseEntity<?> leave(@AuthenticationPrincipal UserReadOnlyDTO me){
@@ -63,5 +66,11 @@ public class PresenceRestController {
     public ResponseEntity<?> neighbors(@AuthenticationPrincipal UserReadOnlyDTO me){
         var neighbors = presenceService.getNeighbors(me.getId());
         return ResponseEntity.ok(neighbors);
+    }
+
+    @GetMapping("/snapshot")
+    public ResponseEntity<SnapshotDTO> snapshot(@AuthenticationPrincipal UserReadOnlyDTO me){
+        SnapshotDTO snapshotDTO = snapshotService.getSnapshot(me.getId());
+        return ResponseEntity.ok(snapshotDTO);
     }
 }
