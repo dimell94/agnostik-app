@@ -5,17 +5,14 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @Slf4j
 public class PresenceService {
 
-    private final List<Long> corridor = new ArrayList<>();
+    private final List<Long> corridor = new LinkedList<>();
     private final Object corridorLock = new Object();
     private final Map<Long, Boolean> locked = new ConcurrentHashMap<>();
     private final Map<Long, Integer> indexByUser = new ConcurrentHashMap<>();
