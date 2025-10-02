@@ -3,6 +3,7 @@ package com.agnostik.agnostik_app.service;
 
 import com.agnostik.agnostik_app.dto.MoveResultDTO;
 import com.agnostik.agnostik_app.dto.NeighborsDTO;
+import com.agnostik.agnostik_app.presence.events.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @Slf4j
-
+@RequiredArgsConstructor
 public class PresenceService {
 
     private final List<Long> corridor = new LinkedList<>();
@@ -23,9 +24,13 @@ public class PresenceService {
     private final Map<Long, Boolean> locked = new ConcurrentHashMap<>();
     private final Map<Long, Integer> indexByUser = new ConcurrentHashMap<>();
 
-    @Autowired
-    NeighborTextStoreService neighborTextStoreService;
 
+    private final NeighborTextStoreService neighborTextStoreService;
+    private final PresenceMoveNotifier moveNotifier;
+    private final PresenceLockNotifier lockNotifier;
+
+    private final PresenceTextNotifier textNotifier;
+    private final PresenceLifecycleNotifier lifecycleNotifier;
 //    @Data
 //    @AllArgsConstructor
 //    public static class MoveResult {
@@ -45,10 +50,13 @@ public class PresenceService {
 
             }
         }
+        lifecycleNotifier.notifyJoin(userId);
     }
 
     public void leave(long userId){
+        NeighborsDTO before;
         synchronized (corridorLock){
+            before = getNeighbors(userId);
             int idx = corridor.indexOf(userId);
             if (idx >= 0){
                 corridor.remove(idx);
@@ -63,6 +71,9 @@ public class PresenceService {
                 log.info("User {} left (size={})", userId, corridor.size());
             }
         }
+        neighborTextStoreService.clear(userId);
+        lifecycleNotifier.notifyLeave(userId, before);
+
     }
 
     public MoveResultDTO moveRight(long userId){
@@ -72,7 +83,7 @@ public class PresenceService {
             before = getNeighbors(userId);
             result = doMoveRight(userId);
         }
-        //to add notifier
+        moveNotifier.notifyMove(userId, result, before);
         return result;
     }
 
@@ -83,18 +94,20 @@ public class PresenceService {
             before = getNeighbors(userId);
             result = doMoveLeft(userId);
         }
-        //to add notifier
+        moveNotifier.notifyMove(userId, result, before);
         return result;
     }
 
     public void lock (long userId){
         locked.put(userId, true);
         log.info("User {} locked", userId);
+        lockNotifier.notifyLockChange(userId, true);
     }
 
     public void unlock (long userId){
         locked.put(userId, false);
         log.info("User {} unlocked", userId);
+        lockNotifier.notifyLockChange(userId, false);
     }
 
 
@@ -223,7 +236,9 @@ public class PresenceService {
     }
 
     public void updateText(Long userId, String text) {
-        neighborTextStoreService.setText(userId, text == null ? "" : text);
+        String safe =  text == null ? "" : text;
+        neighborTextStoreService.setText(userId, safe);
+        textNotifier.notifyTextUpdate(userId, safe);
 
     }
 

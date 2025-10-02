@@ -1,5 +1,6 @@
 package com.agnostik.agnostik_app.service;
 
+import com.agnostik.agnostik_app.presence.events.PresenceRequestNotifier;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class EphemeralRequestService {
 
     private final PresenceService presenceService;
+    private final PresenceRequestNotifier requestNotifier;
 
     @Data
     @AllArgsConstructor
@@ -37,8 +39,8 @@ public class EphemeralRequestService {
         var neighbors = presenceService.getNeighbors(senderId);
 
         boolean adjacent =
-                (neighbors.leftUserId != null && neighbors.leftUserId == receiverId)
-                || (neighbors.rightUserId != null && neighbors.rightUserId == receiverId);
+                (neighbors.getLeftUserId() != null && neighbors.getLeftUserId() == receiverId)
+                || (neighbors.getRightUserId() != null && neighbors.getLeftUserId() == receiverId);
 
         if (!adjacent){
             throw new IllegalStateException("NOT_ADJACENT");
@@ -62,8 +64,8 @@ public class EphemeralRequestService {
         var neighbors = presenceService.getNeighbors(a);
 
         boolean stillAdjacent =
-                (neighbors.leftUserId != null && neighbors.leftUserId == b)
-                || (neighbors.rightUserId != null && neighbors.rightUserId == b);
+                (neighbors.getLeftUserId() != null && neighbors.getLeftUserId() == b)
+                || (neighbors.getRightUserId() != null && neighbors.getRightUserId() == b);
 
         if (!stillAdjacent){
             requests.remove(k);
