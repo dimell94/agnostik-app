@@ -2,7 +2,6 @@ package com.agnostik.agnostik_app.api;
 
 import com.agnostik.agnostik_app.dto.UserReadOnlyDTO;
 import com.agnostik.agnostik_app.service.EphemeralRequestService;
-import com.agnostik.agnostik_app.service.FriendshipService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -24,12 +23,12 @@ public class EphemeralRequestsRestController {
     public ResponseEntity<?> sendRequest(
             @AuthenticationPrincipal UserReadOnlyDTO me,
             @PathVariable long neighborId){
-        try{
+        try {
             ephemeralRequestService.send(me.getId(), neighborId);
             return ResponseEntity.ok(Map.of("ok", true));
 
-        }catch(IllegalStateException e){
-            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
 
@@ -39,7 +38,7 @@ public class EphemeralRequestsRestController {
             @PathVariable long neighborId){
         boolean hasOutgoing = ephemeralRequestService.hasOutgoing(me.getId(), neighborId);
         if (!hasOutgoing){
-            return ResponseEntity.status(409).body("NO_OUTGOING_REQUEST");
+            return ResponseEntity.status(409).body(Map.of("error", "NO_OUTGOING_REQUEST"));
         }
 
         ephemeralRequestService.cancel(me.getId(), neighborId);

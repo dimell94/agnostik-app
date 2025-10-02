@@ -39,8 +39,8 @@ public class EphemeralRequestService {
         var neighbors = presenceService.getNeighbors(senderId);
 
         boolean adjacent =
-                (neighbors.getLeftUserId() != null && neighbors.getLeftUserId() == receiverId)
-                || (neighbors.getRightUserId() != null && neighbors.getRightUserId() == receiverId);
+                (neighbors.getLeftUserId() != null && neighbors.getLeftUserId().equals(receiverId))
+                || (neighbors.getRightUserId() != null && neighbors.getRightUserId().equals(receiverId));
 
         if (!adjacent){
             throw new IllegalStateException("NOT_ADJACENT");
@@ -66,8 +66,8 @@ public class EphemeralRequestService {
         var neighbors = presenceService.getNeighbors(a);
 
         boolean stillAdjacent =
-                (neighbors.getLeftUserId() != null && neighbors.getLeftUserId() == b)
-                || (neighbors.getRightUserId() != null && neighbors.getRightUserId() == b);
+                (neighbors.getLeftUserId() != null && neighbors.getLeftUserId().equals(b))
+                || (neighbors.getRightUserId() != null && neighbors.getRightUserId().equals(b));
 
         if (!stillAdjacent){
             requests.remove(k);

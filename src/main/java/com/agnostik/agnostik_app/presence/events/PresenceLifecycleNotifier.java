@@ -19,7 +19,6 @@ public class PresenceLifecycleNotifier {
     private final PresenceService presenceService;
     private final SnapshotService snapshotService;
     private final PresenceEventPublisher publisher;
-    private final PresenceMoveNotifier moveNotifier;
     private final FriendshipService friendshipService;
     private final NeighborTextStoreService textStoreService;
 
@@ -82,4 +81,3 @@ public class PresenceLifecycleNotifier {
     }
 
 }
-
