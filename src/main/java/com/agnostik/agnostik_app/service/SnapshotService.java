@@ -1,6 +1,7 @@
 package com.agnostik.agnostik_app.service;
 
 
+import com.agnostik.agnostik_app.dto.NeighborsDTO;
 import com.agnostik.agnostik_app.dto.SnapshotDTO;
 import com.agnostik.agnostik_app.model.User;
 import com.agnostik.agnostik_app.repository.UserRepository;
@@ -25,7 +26,7 @@ public class SnapshotService {
 
         int myIndex = presenceService.getMyIndex(userId);
         int corridorSize = presenceService.getCorridorSize();
-        PresenceService.Neighbors neighbors = presenceService.getNeighbors(userId);
+        NeighborsDTO neighbors = presenceService.getNeighbors(userId);
 
         Long leftId = neighbors.getLeftUserId();
         Long rightId = neighbors.getRightUserId();

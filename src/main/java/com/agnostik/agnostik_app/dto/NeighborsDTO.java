@@ -6,16 +6,14 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class NeighborsDTO {
 
     private Long leftUserId;
     private boolean leftLocked;
-    private boolean leftIsFriend;
     private Long rightUserId;
     private boolean rightLocked;
-    private boolean rightIsFriend;
+
 
 }
