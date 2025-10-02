@@ -26,20 +26,20 @@ public class PresenceRestController {
     @PostMapping("/leave")
     public ResponseEntity<?> leave(@AuthenticationPrincipal UserReadOnlyDTO me){
         presenceService.leave(me.getId());
-        return ResponseEntity.ok().body("User with id: " + me.getId() + " left");
+        return ResponseEntity.noContent().build();
 
     }
 
     @PostMapping("/lock")
     public ResponseEntity<?> lock(@AuthenticationPrincipal UserReadOnlyDTO me){
         presenceService.lock(me.getId());
-        return ResponseEntity.ok().body("User with id: " + me.getId() + " locked position");
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/unlock")
     public ResponseEntity<?> unlock(@AuthenticationPrincipal UserReadOnlyDTO me){
         presenceService.unlock(me.getId());
-        return ResponseEntity.ok().body("User with id: " + me.getId() + " unlocked position");
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/moveLeft")

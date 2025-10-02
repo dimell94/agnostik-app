@@ -18,7 +18,7 @@ import java.util.Map;
 public class EphemeralRequestsRestController {
 
     private final EphemeralRequestService ephemeralRequestService;
-    private final FriendshipService friendshipService;
+
 
     @PostMapping("/send/{neighborId}")
     public ResponseEntity<?> sendRequest(
@@ -26,7 +26,7 @@ public class EphemeralRequestsRestController {
             @PathVariable long neighborId){
         try{
             ephemeralRequestService.send(me.getId(), neighborId);
-            return ResponseEntity.ok().body("Request sent to user " + neighborId);
+            return ResponseEntity.ok(Map.of("ok", true));
 
         }catch(IllegalStateException e){
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -43,7 +43,7 @@ public class EphemeralRequestsRestController {
         }
 
         ephemeralRequestService.cancel(me.getId(), neighborId);
-        return ResponseEntity.ok().body("Request cancelled for user " + neighborId);
+        return ResponseEntity.ok(Map.of("ok", true));
     }
 
     @GetMapping("/status/{neighborId}")

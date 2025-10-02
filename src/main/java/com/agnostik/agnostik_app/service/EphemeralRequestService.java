@@ -40,7 +40,7 @@ public class EphemeralRequestService {
 
         boolean adjacent =
                 (neighbors.getLeftUserId() != null && neighbors.getLeftUserId() == receiverId)
-                || (neighbors.getRightUserId() != null && neighbors.getLeftUserId() == receiverId);
+                || (neighbors.getRightUserId() != null && neighbors.getRightUserId() == receiverId);
 
         if (!adjacent){
             throw new IllegalStateException("NOT_ADJACENT");
