@@ -18,7 +18,7 @@ public class EphemeralRequestService {
 
     private final PresenceService presenceService;
     private final PresenceRequestNotifier requestNotifier;
-
+    private final FriendshipService friendshipService;
     @Data
     @AllArgsConstructor
     public static class Request{
@@ -55,6 +55,8 @@ public class EphemeralRequestService {
         requests.putIfAbsent(k,new Request(senderId,receiverId));
 
         log.info("Request: {} -> {}",senderId, receiverId);
+
+        requestNotifier.notifyRequestSent(senderId, receiverId);
     }
 
 
@@ -78,6 +80,7 @@ public class EphemeralRequestService {
     public void cancel(long a, long b){
         requests.remove(key(a,b));
         log.info("Request canceled between {} and {}",a, b);
+        requestNotifier.notifyRequestCancelled(a, b);
     }
 
     public boolean hasOutgoing(long userId, long neighborId){
@@ -91,6 +94,26 @@ public class EphemeralRequestService {
     public void removeRequest(long a, long b){
         requests.remove(key(a, b));
     }
+
+
+    public void accept(long meId, long neighborId) {
+        if (!hasIncoming(meId, neighborId)) {
+            throw new IllegalStateException("NO_INCOMING_REQUEST");
+        }
+        friendshipService.createFriendship(meId, neighborId);
+        removeRequest(meId, neighborId);
+        requestNotifier.notifyRequestAccepted(neighborId, meId);
+        requestNotifier.notifyFriendshipCreated(neighborId, meId);
+    }
+
+    public void reject(long meId, long neighborId) {
+        if (!hasIncoming(meId, neighborId)) {
+            throw new IllegalStateException("NO_INCOMING_REQUEST");
+        }
+        removeRequest(meId, neighborId);
+        requestNotifier.notifyRequestRejected(neighborId, meId);
+    }
+
 
 
 }
