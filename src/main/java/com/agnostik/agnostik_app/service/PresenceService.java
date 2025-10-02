@@ -1,9 +1,13 @@
 package com.agnostik.agnostik_app.service;
 
 
+import com.agnostik.agnostik_app.dto.MoveResultDTO;
+import com.agnostik.agnostik_app.dto.NeighborsDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -11,6 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @Slf4j
+
 public class PresenceService {
 
     private final List<Long> corridor = new LinkedList<>();
@@ -18,13 +23,16 @@ public class PresenceService {
     private final Map<Long, Boolean> locked = new ConcurrentHashMap<>();
     private final Map<Long, Integer> indexByUser = new ConcurrentHashMap<>();
 
-    @Data
-    @AllArgsConstructor
-    public static class MoveResult {
-        private final long userId;
-        private final int fromIndex;
-        private final int toIndex;
-    }
+    @Autowired
+    NeighborTextStoreService neighborTextStoreService;
+
+//    @Data
+//    @AllArgsConstructor
+//    public static class MoveResult {
+//        private final long userId;
+//        private final int fromIndex;
+//        private final int toIndex;
+//    }
 
 
     public void join(long userId){
@@ -57,6 +65,28 @@ public class PresenceService {
         }
     }
 
+    public MoveResultDTO moveRight(long userId){
+        NeighborsDTO before;
+        MoveResultDTO result;
+        synchronized (corridorLock){
+            before = getNeighbors(userId);
+            result = doMoveRight(userId);
+        }
+        //to add notifier
+        return result;
+    }
+
+    public MoveResultDTO moveLeft(long userId){
+        NeighborsDTO before;
+        MoveResultDTO result;
+        synchronized (corridorLock){
+            before = getNeighbors(userId);
+            result = doMoveLeft(userId);
+        }
+        //to add notifier
+        return result;
+    }
+
     public void lock (long userId){
         locked.put(userId, true);
         log.info("User {} locked", userId);
@@ -67,8 +97,48 @@ public class PresenceService {
         log.info("User {} unlocked", userId);
     }
 
-    public MoveResult moveRight(long userId){
+
+
+
+
+
+
+//    @Data
+//    @AllArgsConstructor
+//    public static class Neighbors {
+//        public final Long leftUserId;
+//        public final boolean leftLocked;
+//        public final Long rightUserId;
+//        public final boolean rightLocked;
+//
+//    }
+
+    public NeighborsDTO getNeighbors(long userId){
         synchronized (corridorLock){
+            int idx = corridor.indexOf(userId);
+            if (idx < 0) {
+
+                return new NeighborsDTO(null, false, null, false);
+            }
+
+            Long left = (idx - 1) >= 0 ? corridor.get(idx - 1) : null;
+            Long right = (idx + 1) < corridor.size() ? corridor.get(idx + 1) : null;
+
+            boolean leftLocked = left != null && Boolean.TRUE.equals(locked.get(left));
+            boolean rightLocked = right != null && Boolean.TRUE.equals(locked.get(right));
+
+            return new NeighborsDTO(left, leftLocked, right, rightLocked);
+        }
+    }
+
+
+
+    public boolean isLocked (long userId){
+        return Boolean.TRUE.equals(locked.get(userId));
+    }
+
+    private MoveResultDTO doMoveRight(long userId){
+
             Integer iObj = indexByUser.get(userId);
             if (iObj == null) return null;
             int i = iObj;
@@ -78,7 +148,7 @@ public class PresenceService {
             Long right = corridor.get(i + 1);
             if(!locked.getOrDefault(right, false)){
                 swapPositions(i, i + 1);
-                return new MoveResult(userId, i, i + 1);
+                return new MoveResultDTO(userId, i, i + 1);
             }
 
             int j = i + 1;
@@ -89,12 +159,12 @@ public class PresenceService {
             if (j == corridor.size()) return null;
 
             moveUser(i, j);
-            return new MoveResult(userId, i, j);
-        }
+            return new MoveResultDTO(userId, i, j);
+
     }
 
-    public MoveResult moveLeft(long userId){
-        synchronized (corridorLock){
+    private MoveResultDTO doMoveLeft(long userId){
+
             Integer iObj = indexByUser.get(userId);
             if (iObj == null) return null;
             int i = iObj;
@@ -104,7 +174,7 @@ public class PresenceService {
             Long left = corridor.get(i - 1);
             if(!locked.getOrDefault(left, false)){
                 swapPositions(i, i -1);
-                return new MoveResult(userId, i, i - 1 );
+                return new MoveResultDTO(userId, i, i - 1 );
             }
 
             int j = i - 1;
@@ -115,46 +185,10 @@ public class PresenceService {
             if(j < 0) return null;
 
             moveUser(i, j + 1);
-            return  new MoveResult(userId, i, j + 1);
-
-
-        }
-    }
+            return  new MoveResultDTO(userId, i, j + 1);
 
 
 
-    @Data
-    @AllArgsConstructor
-    public static class Neighbors {
-        public final Long leftUserId;
-        public final boolean leftLocked;
-        public final Long rightUserId;
-        public final boolean rightLocked;
-
-    }
-
-    public Neighbors getNeighbors(long userId){
-        synchronized (corridorLock){
-            int idx = corridor.indexOf(userId);
-            if (idx < 0) {
-
-                return new Neighbors(null, false, null, false);
-            }
-
-            Long left = (idx - 1) >= 0 ? corridor.get(idx - 1) : null;
-            Long right = (idx + 1) < corridor.size() ? corridor.get(idx + 1) : null;
-
-            boolean leftLocked = left != null && Boolean.TRUE.equals(locked.get(left));
-            boolean rightLocked = right != null && Boolean.TRUE.equals(locked.get(right));
-
-            return new Neighbors(left, leftLocked, right, rightLocked);
-        }
-    }
-
-
-
-    public boolean isLocked (long userId){
-        return Boolean.TRUE.equals(locked.get(userId));
     }
 
     private void swapPositions(int i, int j){
@@ -187,5 +221,12 @@ public class PresenceService {
             return corridor.size();
         }
     }
+
+    public void updateText(Long userId, String text) {
+        neighborTextStoreService.setText(userId, text == null ? "" : text);
+
+    }
+
+
 
 }
