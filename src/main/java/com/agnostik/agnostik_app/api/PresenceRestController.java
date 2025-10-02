@@ -1,5 +1,6 @@
 package com.agnostik.agnostik_app.api;
 
+import com.agnostik.agnostik_app.dto.MoveResultDTO;
 import com.agnostik.agnostik_app.dto.SnapshotDTO;
 import com.agnostik.agnostik_app.dto.UserReadOnlyDTO;
 import com.agnostik.agnostik_app.model.User;
@@ -42,23 +43,37 @@ public class PresenceRestController {
     }
 
     @PostMapping("/moveLeft")
-    public ResponseEntity<?> moveLeft(@AuthenticationPrincipal UserReadOnlyDTO me){
-         var moveResult = presenceService.moveLeft(me.getId());
-        if (moveResult == null){
-            return ResponseEntity.status(409).body("CANNOT_MOVE_LEFT");
+    public ResponseEntity<?> moveLeft(@AuthenticationPrincipal UserReadOnlyDTO me) {
+        MoveResultDTO result = presenceService.moveLeft(me.getId());
+        if (result == null) {
+            return ResponseEntity.status(409).body(Map.of("ok", false));
         }
-
-        return ResponseEntity.ok().body("User with id: " + me.getId() + " moved left");
+        return ResponseEntity.ok(Map.of(
+                "ok", true,
+                "result", Map.of(
+                        "userId", result.getUserId(),
+                        "fromIndex", result.getFromIndex(),
+                        "toIndex", result.getToIndex(),
+                        "corridorSize", presenceService.getCorridorSize()
+                )
+        ));
     }
 
     @PostMapping("/moveRight")
-    public ResponseEntity<?> moveRight(@AuthenticationPrincipal UserReadOnlyDTO me){
-        var moved = presenceService.moveRight(me.getId());
-        if (moved == null){
-            return ResponseEntity.status(409).body("CANNOT_MOVE_RIGHT");
+    public ResponseEntity<?> moveRight(@AuthenticationPrincipal UserReadOnlyDTO me) {
+        MoveResultDTO result = presenceService.moveRight(me.getId());
+        if (result == null) {
+            return ResponseEntity.status(409).body(Map.of("ok", false));
         }
-
-        return ResponseEntity.ok().body("User with id: " + me.getId() + " moved right");
+        return ResponseEntity.ok(Map.of(
+                "ok", true,
+                "result", Map.of(
+                        "userId", result.getUserId(),
+                        "fromIndex", result.getFromIndex(),
+                        "toIndex", result.getToIndex(),
+                        "corridorSize", presenceService.getCorridorSize()
+                )
+        ));
     }
 
     @GetMapping("/neighbors")
