@@ -58,18 +58,27 @@ public class EphemeralRequestsRestController {
     }
 
     @PostMapping("/accept/{neighborId}")
-    public ResponseEntity<?> acceptRequest(
-            @AuthenticationPrincipal UserReadOnlyDTO me,
-            @PathVariable long neighborId){
-
-        boolean hasIncoming = ephemeralRequestService.hasIncoming(me.getId(), neighborId);
-        if(!hasIncoming) return ResponseEntity.status(409).body("NO_INCOMING_REQUEST");
-
-        friendshipService.createFriendship(me.getId(), neighborId);
-        ephemeralRequestService.removeRequest(me.getId(), neighborId);
-
-        return ResponseEntity.ok().body("Friendship created with user " + neighborId);
+    public ResponseEntity<?> acceptRequest(@AuthenticationPrincipal UserReadOnlyDTO me,
+                                           @PathVariable long neighborId) {
+        try {
+            ephemeralRequestService.accept(me.getId(), neighborId);
+            return ResponseEntity.ok(Map.of("ok", true));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(Map.of("error", e.getMessage()));
+        }
     }
+
+    @PostMapping("/reject/{neighborId}")
+    public ResponseEntity<?> rejectRequest(@AuthenticationPrincipal UserReadOnlyDTO me,
+                                           @PathVariable long neighborId) {
+        try {
+            ephemeralRequestService.reject(me.getId(), neighborId);
+            return ResponseEntity.ok(Map.of("ok", true));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(409).body(Map.of("error", e.getMessage()));
+        }
+    }
+
 
 
 
