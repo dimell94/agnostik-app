@@ -56,7 +56,7 @@ public class EphemeralRequestService {
     }
 
 
-    public Optional<Request> get(long a, long b){
+    private Optional<Request> get(long a, long b){
         String k = key(a, b);
 
         var neighbors = presenceService.getNeighbors(a);
@@ -86,9 +86,7 @@ public class EphemeralRequestService {
         return get(userId, neighborId).map(r -> r.receiverId == userId).orElse(false);
     }
 
-    public void removeRequest(long a, long b){
-        requests.remove(key(a, b));
-    }
+
 
 
 }
