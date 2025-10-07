@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -18,6 +19,7 @@ public class PresenceService {
     private final Object corridorLock = new Object();
     private final Map<Long, Boolean> locked = new ConcurrentHashMap<>();
     private final Map<Long, Integer> indexByUser = new ConcurrentHashMap<>();
+    private final Map<Pair<Long, Long>, Integer> unlockedFriendMoveCount = new ConcurrentHashMap<>();
 
     private final FriendshipService friendshipService;
 
@@ -58,6 +60,7 @@ public class PresenceService {
 
                 log.info("User {} left (size={})", userId, corridor.size());
 
+                unlockedFriendMoveCount.keySet().removeIf(p -> p.getFirst().equals(userId) || p.getSecond().equals(userId));
                 autoLockForFriends();
             }
         }
@@ -70,6 +73,16 @@ public class PresenceService {
 
     public void unlock (long userId){
         locked.put(userId, false);
+        Neighbors neighbors = getNeighbors(userId);
+
+        if (neighbors.getLeftUserId() != null && friendshipService.areFriends(userId, neighbors.getLeftUserId())) {
+            unlockedFriendMoveCount.put(pairOf(userId, neighbors.getLeftUserId()), 0);
+        }
+
+        if (neighbors.getRightUserId() != null && friendshipService.areFriends(userId, neighbors.getRightUserId())) {
+            unlockedFriendMoveCount.put(pairOf(userId, neighbors.getRightUserId()), 0);
+        }
+
         log.info("User {} unlocked", userId);
     }
 
@@ -84,6 +97,7 @@ public class PresenceService {
             Long right = corridor.get(i + 1);
             if(!locked.getOrDefault(right, false)){
                 swapPositions(i, i + 1);
+                incrementUnlockedFriendsCountForUser(userId);
                 autoLockForFriends();
                 return new MoveResult(userId, i, i + 1);
             }
@@ -96,6 +110,7 @@ public class PresenceService {
             if (j == corridor.size()) return null;
 
             moveUser(i, j);
+            incrementUnlockedFriendsCountForUser(userId);
             autoLockForFriends();
             return new MoveResult(userId, i, j);
         }
@@ -112,6 +127,7 @@ public class PresenceService {
             Long left = corridor.get(i - 1);
             if(!locked.getOrDefault(left, false)){
                 swapPositions(i, i -1);
+                incrementUnlockedFriendsCountForUser(userId);
                 autoLockForFriends();
                 return new MoveResult(userId, i, i - 1 );
             }
@@ -124,6 +140,7 @@ public class PresenceService {
             if(j < 0) return null;
 
             moveUser(i, j + 1);
+            incrementUnlockedFriendsCountForUser(userId);
             autoLockForFriends();
             return  new MoveResult(userId, i, j + 1);
 
@@ -199,6 +216,16 @@ public class PresenceService {
             Long rightId = corridor.get(i + 1);
 
             if (friendshipService.areFriends(leftId, rightId)){
+                Pair<Long, Long> key = pairOf(leftId, rightId);
+                Integer counter = unlockedFriendMoveCount.get(key);
+
+                if (counter != null && counter < 2){
+                    continue;
+                }
+
+                if (counter != null && counter >= 2){
+                    unlockedFriendMoveCount.remove(key);
+                }
                 boolean leftLocked = locked.getOrDefault(leftId, false);
                 boolean rightLocked = locked.getOrDefault(rightId, false);
 
@@ -210,6 +237,22 @@ public class PresenceService {
             }
         }
     }
+
+    private Pair<Long, Long> pairOf(Long a, Long b) {
+        return a < b ? Pair.of(a, b) : Pair.of(b, a);
+    }
+
+    private void incrementUnlockedFriendsCountForUser (Long userId){
+        var keys = unlockedFriendMoveCount.keySet().stream()
+                .filter(p -> p.getFirst().equals(userId) || p.getSecond().equals(userId))
+                .toList();
+
+        for (var k : keys) {
+            int newValue = unlockedFriendMoveCount.get(k) + 1;
+            unlockedFriendMoveCount.put(k, newValue);
+        }
+    }
+
 
 
 }
