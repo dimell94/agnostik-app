@@ -59,9 +59,5 @@ public class PresenceRestController {
         return ResponseEntity.ok().body("User with id: " + me.getId() + " moved right");
     }
 
-    @GetMapping("/neighbors")
-    public ResponseEntity<?> neighbors(@AuthenticationPrincipal UserReadOnlyDTO me){
-        var neighbors = presenceService.getNeighbors(me.getId());
-        return ResponseEntity.ok(neighbors);
-    }
+
 }
