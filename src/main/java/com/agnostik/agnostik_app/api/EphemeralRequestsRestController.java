@@ -3,6 +3,8 @@ package com.agnostik.agnostik_app.api;
 import com.agnostik.agnostik_app.dto.UserReadOnlyDTO;
 import com.agnostik.agnostik_app.service.EphemeralRequestService;
 import com.agnostik.agnostik_app.service.FriendshipService;
+import com.agnostik.agnostik_app.service.PresenceService;
+import com.agnostik.agnostik_app.service.SnapshotNotifierService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -10,65 +12,91 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/requests")
 @RequiredArgsConstructor
-@Slf4j
 public class EphemeralRequestsRestController {
 
     private final EphemeralRequestService ephemeralRequestService;
     private final FriendshipService friendshipService;
+    private final PresenceService presenceService;
+    private final SnapshotNotifierService snapshotNotifierService;
 
-    @PostMapping("/send/{neighborId}")
+    @PostMapping("/send/{direction}")
     public ResponseEntity<?> sendRequest(
             @AuthenticationPrincipal UserReadOnlyDTO me,
-            @PathVariable long neighborId){
-        try{
-            ephemeralRequestService.send(me.getId(), neighborId);
-            return ResponseEntity.ok().body("Request sent to user " + neighborId);
-
-        }catch(IllegalStateException e){
-            return ResponseEntity.badRequest().body(e.getMessage());
+            @PathVariable String direction){
+        Long targetId = resolveNeighborId(me.getId(), direction);
+        if (targetId == null){
+            return ResponseEntity.badRequest().body("NO_NEIGHBOR_FOUND");
         }
+        ephemeralRequestService.send(me.getId(), targetId);
+        snapshotNotifierService.notifyUsers(Set.of(me.getId(), targetId));
+
+        return ResponseEntity.ok().body("Friend request sent from user: " + me.getId() + " to user: " + targetId);
     }
 
-    @PostMapping("/cancel/{neighborId}")
+    @PostMapping("/cancel/{direction}")
     public ResponseEntity<?> cancelRequest(
             @AuthenticationPrincipal UserReadOnlyDTO me,
-            @PathVariable long neighborId){
-        boolean hasOutgoing = ephemeralRequestService.hasOutgoing(me.getId(), neighborId);
-        if (!hasOutgoing){
-            return ResponseEntity.status(409).body("NO_OUTGOING_REQUEST");
+            @PathVariable String direction){
+        Long targetId = resolveNeighborId(me.getId(), direction);
+        if (targetId == null) {
+            return ResponseEntity.badRequest().body("NO_NEIGHBOR_FOUND");
         }
+        ephemeralRequestService.cancel(me.getId(), targetId);
+        snapshotNotifierService.notifyUsers(Set.of(me.getId(), targetId));
 
-        ephemeralRequestService.cancel(me.getId(), neighborId);
-        return ResponseEntity.ok().body("Request cancelled for user " + neighborId);
+        return ResponseEntity.ok().body("Friend request cancelled from user: " + me.getId() + " to user: " + targetId);
     }
 
-    @GetMapping("/status/{neighborId}")
-    public Map<String, Boolean> requestStatus(
-            @AuthenticationPrincipal UserReadOnlyDTO me,
-            @PathVariable long neighborId){
 
-        boolean outgoing = ephemeralRequestService.hasOutgoing(me.getId(), neighborId);
-        boolean incoming = ephemeralRequestService.hasIncoming(me.getId(), neighborId);
 
-        return Map.of("outgoing", outgoing, "incoming" , incoming);
-    }
-
-    @PostMapping("/accept/{neighborId}")
+    @PostMapping("/accept/{direction}")
     public ResponseEntity<?> acceptRequest(
             @AuthenticationPrincipal UserReadOnlyDTO me,
-            @PathVariable long neighborId){
+            @PathVariable String direction){
 
-        boolean hasIncoming = ephemeralRequestService.hasIncoming(me.getId(), neighborId);
-        if(!hasIncoming) return ResponseEntity.status(409).body("NO_INCOMING_REQUEST");
+        Long targetId = resolveNeighborId(me.getId(), direction);
+        if (targetId == null){
+            return ResponseEntity.badRequest().body("NO_NEIGHBOR_FOUND");
+        }
 
-        friendshipService.createFriendship(me.getId(), neighborId);
-        ephemeralRequestService.removeRequest(me.getId(), neighborId);
+        ephemeralRequestService.cancel(targetId, me.getId());
+        friendshipService.createFriendship(me.getId(), targetId);
 
-        return ResponseEntity.ok().body("Friendship created with user " + neighborId);
+        presenceService.lock(me.getId());
+        presenceService.lock(targetId);
+
+        snapshotNotifierService.notifyUsers(Set.of(me.getId(), targetId));
+
+
+        return ResponseEntity.ok().body("Friendship created between users: " + me.getId() + ", " + targetId);
+    }
+
+    @PostMapping("/reject/{direction}")
+    public ResponseEntity<?> rejectRequest(
+            @AuthenticationPrincipal UserReadOnlyDTO me,
+            @PathVariable String direction) {
+
+        Long targetId = resolveNeighborId(me.getId(), direction);
+        if (targetId == null)
+            return ResponseEntity.badRequest().body("NO_NEIGHBOR_FOUND");
+
+        ephemeralRequestService.cancel(targetId, me.getId());
+        snapshotNotifierService.notifyUsers(Set.of(me.getId(), targetId));
+        return ResponseEntity.ok().body("Friend request from user: " + targetId + " to user: " + me.getId() + " was rejected");
+    }
+
+
+
+        private Long resolveNeighborId(Long meId, String direction) {
+        var neighbors = presenceService.getNeighbors(meId);
+        if ("left".equalsIgnoreCase(direction)) return neighbors.getLeftUserId();
+        if ("right".equalsIgnoreCase(direction)) return neighbors.getRightUserId();
+        return null;
     }
 
 
