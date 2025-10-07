@@ -72,7 +72,7 @@ public class PresenceRestController {
 
 
         // to build a response with move results
-        return ResponseEntity.ok().body("User with id: " + me.getId() + " moved left");
+        return ResponseEntity.ok(moveResult);
     }
 
     @PostMapping("/moveRight")
@@ -96,7 +96,7 @@ public class PresenceRestController {
 
 
 
-        return ResponseEntity.ok().body("User with id: " + me.getId() + " moved right");
+        return ResponseEntity.ok(moveResult);
     }
 
     private void notifyMeAndNeighbors (Long me, Long left, Long right) {
