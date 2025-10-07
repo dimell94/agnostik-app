@@ -143,8 +143,8 @@ public class PresenceService {
             Long left = (idx - 1) >= 0 ? corridor.get(idx - 1) : null;
             Long right = (idx + 1) < corridor.size() ? corridor.get(idx + 1) : null;
 
-            boolean leftLocked = left != null && Boolean.TRUE.equals(locked.get(left));
-            boolean rightLocked = right != null && Boolean.TRUE.equals(locked.get(right));
+            boolean leftLocked = left != null && isLocked(left);
+            boolean rightLocked = right != null && isLocked(right);
 
             return new Neighbors(left, leftLocked, right, rightLocked);
         }
@@ -172,6 +172,14 @@ public class PresenceService {
         for (int i = Math.min(from, to); i < corridor.size(); i++){
             indexByUser.put(corridor.get(i), i);
         }
+    }
+
+    public Integer getIndexOf (Long userId){
+        return indexByUser.get(userId);
+    }
+
+    public int getCorridorSize (){
+        return corridor.size();
     }
 
 
