@@ -2,6 +2,7 @@ package com.agnostik.agnostik_app.service;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -10,12 +11,15 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class PresenceService {
 
     private final List<Long> corridor = new LinkedList<>();
     private final Object corridorLock = new Object();
     private final Map<Long, Boolean> locked = new ConcurrentHashMap<>();
     private final Map<Long, Integer> indexByUser = new ConcurrentHashMap<>();
+
+    private final FriendshipService friendshipService;
 
     @Data
     @AllArgsConstructor
@@ -33,6 +37,7 @@ public class PresenceService {
                 indexByUser.put(userId, corridor.size() - 1);
                 locked.putIfAbsent(userId, false);
                 log.info("User {} joined (size={}", userId, corridor.size());
+                autoLockForFriends();
 
             }
         }
@@ -52,6 +57,8 @@ public class PresenceService {
                 locked.remove(userId);
 
                 log.info("User {} left (size={})", userId, corridor.size());
+
+                autoLockForFriends();
             }
         }
     }
@@ -77,6 +84,7 @@ public class PresenceService {
             Long right = corridor.get(i + 1);
             if(!locked.getOrDefault(right, false)){
                 swapPositions(i, i + 1);
+                autoLockForFriends();
                 return new MoveResult(userId, i, i + 1);
             }
 
@@ -88,6 +96,7 @@ public class PresenceService {
             if (j == corridor.size()) return null;
 
             moveUser(i, j);
+            autoLockForFriends();
             return new MoveResult(userId, i, j);
         }
     }
@@ -103,6 +112,7 @@ public class PresenceService {
             Long left = corridor.get(i - 1);
             if(!locked.getOrDefault(left, false)){
                 swapPositions(i, i -1);
+                autoLockForFriends();
                 return new MoveResult(userId, i, i - 1 );
             }
 
@@ -114,6 +124,7 @@ public class PresenceService {
             if(j < 0) return null;
 
             moveUser(i, j + 1);
+            autoLockForFriends();
             return  new MoveResult(userId, i, j + 1);
 
 
@@ -180,6 +191,24 @@ public class PresenceService {
 
     public int getCorridorSize (){
         return corridor.size();
+    }
+
+    private void autoLockForFriends() {
+        for (int i = 0; i < corridor.size() - 1; i++){
+            Long leftId = corridor.get(i);
+            Long rightId = corridor.get(i + 1);
+
+            if (friendshipService.areFriends(leftId, rightId)){
+                boolean leftLocked = locked.getOrDefault(leftId, false);
+                boolean rightLocked = locked.getOrDefault(rightId, false);
+
+                if (!leftLocked || !rightLocked){
+                    locked.put(leftId, true);
+                    locked.put(rightId, true);
+                    log.info("Users: " + leftId + ", " + rightId + " were auto locked");
+                }
+            }
+        }
     }
 
 
