@@ -26,9 +26,10 @@ public class PresenceService {
     @Data
     @AllArgsConstructor
     public static class MoveResult {
-        private final long userId;
+
         private final int fromIndex;
         private final int toIndex;
+        private final int corridorSize;
     }
 
 
@@ -99,7 +100,7 @@ public class PresenceService {
                 swapPositions(i, i + 1);
                 incrementUnlockedFriendsCountForUser(userId);
                 autoLockForFriends();
-                return new MoveResult(userId, i, i + 1);
+                return new MoveResult(i, i + 1, corridor.size());
             }
 
             int j = i + 1;
@@ -112,7 +113,7 @@ public class PresenceService {
             moveUser(i, j);
             incrementUnlockedFriendsCountForUser(userId);
             autoLockForFriends();
-            return new MoveResult(userId, i, j);
+            return new MoveResult(i, j, corridor.size());
         }
     }
 
@@ -129,7 +130,7 @@ public class PresenceService {
                 swapPositions(i, i -1);
                 incrementUnlockedFriendsCountForUser(userId);
                 autoLockForFriends();
-                return new MoveResult(userId, i, i - 1 );
+                return new MoveResult(i, i - 1, corridor.size());
             }
 
             int j = i - 1;
@@ -142,7 +143,7 @@ public class PresenceService {
             moveUser(i, j + 1);
             incrementUnlockedFriendsCountForUser(userId);
             autoLockForFriends();
-            return  new MoveResult(userId, i, j + 1);
+            return  new MoveResult(i, j + 1, corridor.size());
 
 
         }
