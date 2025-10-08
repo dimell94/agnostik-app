@@ -1,9 +1,11 @@
 package com.agnostik.agnostik_app.api;
 
+import com.agnostik.agnostik_app.dto.SnapshotDTO;
 import com.agnostik.agnostik_app.dto.UserReadOnlyDTO;
 import com.agnostik.agnostik_app.model.User;
 import com.agnostik.agnostik_app.service.PresenceService;
 import com.agnostik.agnostik_app.service.SnapshotNotifierService;
+import com.agnostik.agnostik_app.service.SnapshotService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +19,7 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @RestController
 @RequestMapping("api/presence/")
@@ -26,10 +29,13 @@ public class PresenceRestController {
 
     private final PresenceService presenceService;
     private final SnapshotNotifierService snapshotNotifierService;
+    private final SnapshotService snapshotService;
 
     @PostMapping("/leave")
     public ResponseEntity<?> leave(@AuthenticationPrincipal UserReadOnlyDTO me){
+        var before = presenceService.getNeighbors(me.getId());
         presenceService.leave(me.getId());
+        notifyMeAndNeighbors(me.getId(), before.getLeftUserId(), before.getRightUserId());
         return ResponseEntity.ok().body("User with id: " + me.getId() + " left");
 
     }
@@ -62,11 +68,13 @@ public class PresenceRestController {
 
         var after = presenceService.getNeighbors(me.getId());
 
-        Set<Long> impacted = Set.of(
-                me.getId(),
-                before.getLeftUserId(), before.getRightUserId(),
-                after.getLeftUserId(), after.getRightUserId()
-        ).stream().filter(Objects::nonNull).collect(Collectors.toSet());
+        Set<Long> impacted = Stream.of(
+                        me.getId(),
+                        before.getLeftUserId(),  before.getRightUserId(),
+                        after.getLeftUserId(),   after.getRightUserId()
+                )
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
 
         snapshotNotifierService.notifyUsers(impacted);
 
@@ -86,11 +94,13 @@ public class PresenceRestController {
 
         var after = presenceService.getNeighbors(me.getId());
 
-        Set<Long> impacted = Set.of(
-                me.getId(),
-                before.getLeftUserId(), before.getRightUserId(),
-                after.getLeftUserId(), after.getRightUserId()
-        ).stream().filter(Objects::nonNull).collect(Collectors.toSet());
+        Set<Long> impacted = Stream.of(
+                        me.getId(),
+                        before.getLeftUserId(),  before.getRightUserId(),
+                        after.getLeftUserId(),   after.getRightUserId()
+                )
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
 
         snapshotNotifierService.notifyUsers(impacted);
 
@@ -106,6 +116,13 @@ public class PresenceRestController {
         if (right != null) ids.add(right);
         snapshotNotifierService.notifyUsers(ids);
     }
+
+    @GetMapping("/snapshot")
+    public ResponseEntity<SnapshotDTO> getSnapshot(@AuthenticationPrincipal UserReadOnlyDTO me) {
+        SnapshotDTO snapshot = snapshotService.buildFor(me.getId());
+        return ResponseEntity.ok(snapshot);
+    }
+
 
 
 }
