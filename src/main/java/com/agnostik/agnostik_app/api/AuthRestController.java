@@ -15,7 +15,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -32,9 +35,13 @@ public class AuthRestController {
         AuthenticationResponseDTO response = authService.register(dto);
         presenceService.join(response.getUserId());
         var neighbors = presenceService.getNeighbors(response.getUserId());
-        Set<Long> affected = Set.of(response.getUserId(),
-                neighbors.getLeftUserId(),
-                neighbors.getRightUserId());
+        Set<Long> affected = Stream.of(
+                        response.getUserId(),
+                        neighbors.getLeftUserId(),
+                        neighbors.getRightUserId()
+                )
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
         snapshotNotifierService.notifyUsers(affected);
 
         return ResponseEntity.ok(response);
@@ -47,9 +54,13 @@ public class AuthRestController {
         presenceService.join(response.getUserId());
 
         var neighbors = presenceService.getNeighbors(response.getUserId());
-        Set<Long> affected = Set.of(response.getUserId(),
-                neighbors.getLeftUserId(),
-                neighbors.getRightUserId());
+        Set<Long> affected = Stream.of(
+                        response.getUserId(),
+                        neighbors.getLeftUserId(),
+                        neighbors.getRightUserId()
+                )
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
         snapshotNotifierService.notifyUsers(affected);
         return ResponseEntity.ok(response);
     }
