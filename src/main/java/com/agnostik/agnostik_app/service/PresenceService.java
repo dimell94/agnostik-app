@@ -110,7 +110,7 @@ public class PresenceService {
 
             if (j == corridor.size()) return null;
 
-            moveUser(i, j);
+            moveUser(i, j - 1);
             incrementUnlockedFriendsCountForUser(userId);
             autoLockForFriends();
             return new MoveResult(i, j, corridor.size());
