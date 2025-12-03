@@ -1,7 +1,7 @@
 package com.agnostik.agnostik_app.service;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import com.agnostik.agnostik_app.dto.MoveResultDTO;
+import com.agnostik.agnostik_app.dto.NeighborsDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.util.Pair;
@@ -22,15 +22,6 @@ public class PresenceService {
     private final Map<Pair<Long, Long>, Integer> unlockedFriendMoveCount = new ConcurrentHashMap<>();
 
     private final FriendshipService friendshipService;
-
-    @Data
-    @AllArgsConstructor
-    public static class MoveResult {
-
-        private final int fromIndex;
-        private final int toIndex;
-        private final int corridorSize;
-    }
 
 
     public void join(long userId){
@@ -74,7 +65,7 @@ public class PresenceService {
 
     public void unlock (long userId){
         locked.put(userId, false);
-        Neighbors neighbors = getNeighbors(userId);
+        NeighborsDTO neighbors = getNeighbors(userId);
 
         if (neighbors.getLeftUserId() != null && friendshipService.areFriends(userId, neighbors.getLeftUserId())) {
             unlockedFriendMoveCount.put(pairOf(userId, neighbors.getLeftUserId()), 0);
@@ -87,7 +78,7 @@ public class PresenceService {
         log.info("User {} unlocked", userId);
     }
 
-    public MoveResult moveRight(long userId){
+    public MoveResultDTO moveRight(long userId){
         synchronized (corridorLock){
             Integer iObj = indexByUser.get(userId);
             if (iObj == null) return null;
@@ -100,7 +91,7 @@ public class PresenceService {
                 swapPositions(i, i + 1);
                 incrementUnlockedFriendsCountForUser(userId);
                 autoLockForFriends();
-                return new MoveResult(i, i + 1, corridor.size());
+                return new MoveResultDTO(i, i + 1, corridor.size());
             }
 
             int j = i + 1;
@@ -113,11 +104,11 @@ public class PresenceService {
             moveUser(i, j - 1);
             incrementUnlockedFriendsCountForUser(userId);
             autoLockForFriends();
-            return new MoveResult(i, j, corridor.size());
+            return new MoveResultDTO(i, j, corridor.size());
         }
     }
 
-    public MoveResult moveLeft(long userId){
+    public MoveResultDTO moveLeft(long userId){
         synchronized (corridorLock){
             Integer iObj = indexByUser.get(userId);
             if (iObj == null) return null;
@@ -130,7 +121,7 @@ public class PresenceService {
                 swapPositions(i, i -1);
                 incrementUnlockedFriendsCountForUser(userId);
                 autoLockForFriends();
-                return new MoveResult(i, i - 1, corridor.size());
+                return new MoveResultDTO(i, i - 1, corridor.size());
             }
 
             int j = i - 1;
@@ -143,30 +134,19 @@ public class PresenceService {
             moveUser(i, j + 1);
             incrementUnlockedFriendsCountForUser(userId);
             autoLockForFriends();
-            return  new MoveResult(i, j + 1, corridor.size());
+            return  new MoveResultDTO(i, j + 1, corridor.size());
 
 
         }
     }
 
 
-
-    @Data
-    @AllArgsConstructor
-    public static class Neighbors {
-        public final Long leftUserId;
-        public final boolean leftLocked;
-        public final Long rightUserId;
-        public final boolean rightLocked;
-
-    }
-
-    public Neighbors getNeighbors(long userId){
+    public NeighborsDTO getNeighbors(long userId){
         synchronized (corridorLock){
             int idx = corridor.indexOf(userId);
             if (idx < 0) {
 
-                return new Neighbors(null, false, null, false);
+                return new NeighborsDTO(null, false, null, false);
             }
 
             Long left = (idx - 1) >= 0 ? corridor.get(idx - 1) : null;
@@ -175,7 +155,7 @@ public class PresenceService {
             boolean leftLocked = left != null && isLocked(left);
             boolean rightLocked = right != null && isLocked(right);
 
-            return new Neighbors(left, leftLocked, right, rightLocked);
+            return new NeighborsDTO(left, leftLocked, right, rightLocked);
         }
     }
 
