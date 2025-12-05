@@ -16,6 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class EphemeralRequestService {
 
     private final PresenceService presenceService;
+    private final FriendshipService friendshipService;
 
     @Data
     @AllArgsConstructor
@@ -40,8 +41,14 @@ public class EphemeralRequestService {
                 (neighbors.leftUserId != null && neighbors.leftUserId == receiverId)
                 || (neighbors.rightUserId != null && neighbors.rightUserId == receiverId);
 
+        boolean areFriends = friendshipService.areFriends(senderId, receiverId);
+
         if (!adjacent){
             throw new IllegalStateException("NOT_ADJACENT");
+        }
+
+        if (areFriends){
+            throw new IllegalArgumentException("ALREADY_FRIENDS");
         }
 
         if (!presenceService.isLocked(senderId) || !presenceService.isLocked(receiverId)){
