@@ -79,7 +79,7 @@ public class PresenceRestController {
         snapshotNotifierService.notifyUsers(impacted);
 
 
-        // to build a response with move results
+        
         return ResponseEntity.ok(moveResult);
     }
 

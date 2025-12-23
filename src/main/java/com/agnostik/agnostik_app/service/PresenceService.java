@@ -178,7 +178,7 @@ public class PresenceService {
         Long user = corridor.remove(from);
         corridor.add(to, user);
 
-        for (int i = Math.min(from, to); i < corridor.size(); i++){
+        for (int i = Math.min(from, to); i <= Math.max(from, to); i++){
             indexByUser.put(corridor.get(i), i);
         }
     }
