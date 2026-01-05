@@ -1,5 +1,6 @@
 package com.agnostik.agnostik_app.api;
 
+import com.agnostik.agnostik_app.dto.ResponseMessageDTO;
 import com.agnostik.agnostik_app.dto.UserReadOnlyDTO;
 import com.agnostik.agnostik_app.service.EphemeralRequestService;
 import com.agnostik.agnostik_app.service.FriendshipService;
@@ -30,7 +31,7 @@ public class EphemeralRequestsRestController {
             @PathVariable String direction){
         Long targetId = resolveNeighborId(me.getId(), direction);
         if (targetId == null){
-            return ResponseEntity.badRequest().body("NO_NEIGHBOR_FOUND");
+            return ResponseEntity.badRequest().body(new ResponseMessageDTO("NO_NEIGHBOR_FOUND", "No neighbor found on " + direction));
         }
         ephemeralRequestService.send(me.getId(), targetId);
         snapshotNotifierService.notifyUsers(Set.of(me.getId(), targetId));
@@ -44,7 +45,7 @@ public class EphemeralRequestsRestController {
             @PathVariable String direction){
         Long targetId = resolveNeighborId(me.getId(), direction);
         if (targetId == null) {
-            return ResponseEntity.badRequest().body("NO_NEIGHBOR_FOUND");
+            return ResponseEntity.badRequest().body(new ResponseMessageDTO("NO_NEIGHBOR_FOUND", "No neighbor found on " + direction));
         }
         ephemeralRequestService.cancel(me.getId(), targetId);
         snapshotNotifierService.notifyUsers(Set.of(me.getId(), targetId));
@@ -61,7 +62,7 @@ public class EphemeralRequestsRestController {
 
         Long targetId = resolveNeighborId(me.getId(), direction);
         if (targetId == null){
-            return ResponseEntity.badRequest().body("NO_NEIGHBOR_FOUND");
+            return ResponseEntity.badRequest().body(new ResponseMessageDTO("NO_NEIGHBOR_FOUND", "No neighbor found on " + direction));
         }
 
         ephemeralRequestService.cancel(targetId, me.getId());
@@ -83,7 +84,7 @@ public class EphemeralRequestsRestController {
 
         Long targetId = resolveNeighborId(me.getId(), direction);
         if (targetId == null)
-            return ResponseEntity.badRequest().body("NO_NEIGHBOR_FOUND");
+            return ResponseEntity.badRequest().body(new ResponseMessageDTO("NO_NEIGHBOR_FOUND", "No neighbor found on " + direction));
 
         ephemeralRequestService.cancel(targetId, me.getId());
         snapshotNotifierService.notifyUsers(Set.of(me.getId(), targetId));

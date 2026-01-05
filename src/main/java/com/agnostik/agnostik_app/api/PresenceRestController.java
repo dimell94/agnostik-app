@@ -1,5 +1,6 @@
 package com.agnostik.agnostik_app.api;
 
+import com.agnostik.agnostik_app.dto.ResponseMessageDTO;
 import com.agnostik.agnostik_app.dto.SnapshotDTO;
 import com.agnostik.agnostik_app.dto.UserReadOnlyDTO;
 import com.agnostik.agnostik_app.model.User;
@@ -63,7 +64,8 @@ public class PresenceRestController {
         var moveResult = presenceService.moveLeft(me.getId());
 
         if (moveResult == null){
-            return ResponseEntity.status(409).body("CANNOT_MOVE_LEFT");
+            return ResponseEntity.status(409)
+                    .body(new ResponseMessageDTO("CANNOT_MOVE_LEFT", "User cannot move left"));
         }
 
         var after = presenceService.getNeighbors(me.getId());
@@ -89,7 +91,8 @@ public class PresenceRestController {
 
         var moveResult = presenceService.moveRight(me.getId());
         if (moveResult == null){
-            return ResponseEntity.status(409).body("CANNOT_MOVE_RIGHT");
+            return ResponseEntity.status(409)
+                    .body(new ResponseMessageDTO("CANNOT_MOVE_RIGHT", "User cannot move right"));
         }
 
         var after = presenceService.getNeighbors(me.getId());
