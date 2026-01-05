@@ -3,8 +3,8 @@ package com.agnostik.agnostik_app.core;
 import com.agnostik.agnostik_app.core.exception.AppInvalidCredentialsException;
 import com.agnostik.agnostik_app.core.exception.AppObjectAlreadyExistsException;
 import com.agnostik.agnostik_app.core.exception.AppObjectInvalidArgumentException;
+import com.agnostik.agnostik_app.core.exception.AppObjectNotFoundException;
 import com.agnostik.agnostik_app.dto.ResponseMessageDTO;
-import jakarta.validation.ValidationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -59,6 +59,22 @@ public class ErrorHandler {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(new ResponseMessageDTO(e.getCode(), e.getMessage()));
+    }
+
+    @ExceptionHandler(AppObjectNotFoundException.class)
+    public ResponseEntity<ResponseMessageDTO> handleNotFound(AppObjectNotFoundException e) {
+        log.warn("Not found: {}", e.getMessage());
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(new ResponseMessageDTO(e.getCode(), e.getMessage()));
+    }
+
+    @ExceptionHandler({IllegalArgumentException.class, IllegalStateException.class})
+    public ResponseEntity<ResponseMessageDTO> handleIllegal(RuntimeException e) {
+        log.warn("Bad request: {}", e.getMessage());
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(new ResponseMessageDTO("BAD_REQUEST", e.getMessage()));
     }
 
 }
