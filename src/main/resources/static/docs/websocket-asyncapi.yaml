@@ -1,0 +1,278 @@
+asyncapi: 2.6.0
+info:
+  title: Agnostik WebSocket API
+  version: "1.0.0"
+  description: >
+    STOMP over WebSocket contracts. Authenticate with JWT in CONNECT header
+    `Authorization: Bearer <token>`. Initial state comes from REST
+    `/api/presence/snapshot`; all subsequent state changes are delivered here.
+servers:
+  default:
+    url: ws://localhost:8080/ws
+    protocol: ws
+    description: Use wss://host/ws in production over HTTPS.
+components:
+  securitySchemes:
+    bearerJwt:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  messages:
+    Snapshot:
+      name: SNAPSHOT
+      title: Snapshot
+      payload:
+        $ref: "#/components/schemas/Snapshot"
+    NeighborsUpdated:
+      name: NEIGHBORS_UPDATED
+      title: Neighbors updated
+      payload:
+        $ref: "#/components/schemas/NeighborsUpdated"
+    RequestIncoming:
+      name: REQUEST_INCOMING
+      title: Incoming friend request
+      payload:
+        type: object
+        required: [type, data]
+        properties:
+          type:
+            const: REQUEST_INCOMING
+          data:
+            type: object
+            required: [fromUserId]
+            properties:
+              fromUserId:
+                type: integer
+                format: int64
+    RequestCancelled:
+      name: REQUEST_CANCELLED
+      title: Cancelled friend request
+      payload:
+        type: object
+        required: [type, data]
+        properties:
+          type:
+            const: REQUEST_CANCELLED
+          data:
+            type: object
+            required: [fromUserId]
+            properties:
+              fromUserId:
+                type: integer
+                format: int64
+    RequestAccepted:
+      name: REQUEST_ACCEPTED
+      title: Accepted friend request
+      payload:
+        type: object
+        required: [type, data]
+        properties:
+          type:
+            const: REQUEST_ACCEPTED
+          data:
+            type: object
+            required: [byUserId]
+            properties:
+              byUserId:
+                type: integer
+                format: int64
+    RequestRejected:
+      name: REQUEST_REJECTED
+      title: Rejected friend request
+      payload:
+        type: object
+        required: [type, data]
+        properties:
+          type:
+            const: REQUEST_REJECTED
+          data:
+            type: object
+            required: [byUserId]
+            properties:
+              byUserId:
+                type: integer
+                format: int64
+    NeighborTextUpdated:
+      name: NEIGHBOR_TEXT_UPDATED
+      title: Neighbor text updated
+      payload:
+        type: object
+        required: [type, data]
+        properties:
+          type:
+            const: NEIGHBOR_TEXT_UPDATED
+          data:
+            type: object
+            required: [userId, text]
+            properties:
+              userId:
+                type: integer
+                format: int64
+              text:
+                type: string
+    UserLocked:
+      name: USER_LOCKED
+      payload:
+        $ref: "#/components/schemas/UserLockEvent"
+    UserUnlocked:
+      name: USER_UNLOCKED
+      payload:
+        $ref: "#/components/schemas/UserLockEvent"
+    FriendshipCreated:
+      name: FRIENDSHIP_CREATED
+      payload:
+        $ref: "#/components/schemas/FriendshipEvent"
+    AutoLock:
+      name: AUTO_LOCK
+      payload:
+        $ref: "#/components/schemas/FriendshipEvent"
+    PublishText:
+      name: TEXT_UPDATE
+      title: Publish text update
+      payload:
+        type: object
+        required: [text]
+        properties:
+          text:
+            type: string
+            maxLength: 6000
+  schemas:
+    NeighborRef:
+      type: object
+      required: [userId, locked, friend]
+      properties:
+        userId:
+          type: integer
+          format: int64
+        locked:
+          type: boolean
+        friend:
+          type: boolean
+        text:
+          type: string
+          nullable: true
+        requestToMe:
+          type: boolean
+        requestFromMe:
+          type: boolean
+    Snapshot:
+      type: object
+      required: [type, data]
+      properties:
+        type:
+          const: SNAPSHOT
+        data:
+          type: object
+          required: [myIndex, corridorSize, neighbors, locked, requests]
+          properties:
+            me:
+              type: object
+              properties:
+                id:
+                  type: integer
+                  format: int64
+                username:
+                  type: string
+                  nullable: true
+                text:
+                  type: string
+                  nullable: true
+            myIndex:
+              type: integer
+            corridorSize:
+              type: integer
+            neighbors:
+              type: object
+              properties:
+                left:
+                  $ref: "#/components/schemas/NeighborRef"
+                right:
+                  $ref: "#/components/schemas/NeighborRef"
+            locked:
+              type: boolean
+            requests:
+              type: object
+              properties:
+                outgoing:
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+                incoming:
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+    NeighborsUpdated:
+      type: object
+      required: [type, data]
+      properties:
+        type:
+          const: NEIGHBORS_UPDATED
+        data:
+          type: object
+          required: [myIndex, corridorSize]
+          properties:
+            myIndex:
+              type: integer
+            corridorSize:
+              type: integer
+            left:
+              $ref: "#/components/schemas/NeighborRef"
+            right:
+              $ref: "#/components/schemas/NeighborRef"
+    UserLockEvent:
+      type: object
+      required: [type, data]
+      properties:
+        type:
+          enum: [USER_LOCKED, USER_UNLOCKED]
+        data:
+          type: object
+          required: [userId]
+          properties:
+            userId:
+              type: integer
+              format: int64
+    FriendshipEvent:
+      type: object
+      required: [type, data]
+      properties:
+        type:
+          enum: [FRIENDSHIP_CREATED, AUTO_LOCK]
+        data:
+          type: object
+          required: [userId1, userId2]
+          properties:
+            userId1:
+              type: integer
+              format: int64
+            userId2:
+              type: integer
+              format: int64
+channels:
+  /user/queue/snapshot:
+    description: Client subscribes here to receive all presence events.
+    subscribe:
+      message:
+        oneOf:
+          - $ref: "#/components/messages/Snapshot"
+          - $ref: "#/components/messages/NeighborsUpdated"
+          - $ref: "#/components/messages/RequestIncoming"
+          - $ref: "#/components/messages/RequestCancelled"
+          - $ref: "#/components/messages/RequestAccepted"
+          - $ref: "#/components/messages/RequestRejected"
+          - $ref: "#/components/messages/NeighborTextUpdated"
+          - $ref: "#/components/messages/UserLocked"
+          - $ref: "#/components/messages/UserUnlocked"
+          - $ref: "#/components/messages/FriendshipCreated"
+          - $ref: "#/components/messages/AutoLock"
+      security:
+        - bearerJwt: []
+  /app/text:
+    description: Client publishes text updates for the current user.
+    publish:
+      message:
+        $ref: "#/components/messages/PublishText"
+      security:
+        - bearerJwt: []
