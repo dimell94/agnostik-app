@@ -6,18 +6,26 @@ import com.agnostik.agnostik_app.service.EphemeralRequestService;
 import com.agnostik.agnostik_app.service.FriendshipService;
 import com.agnostik.agnostik_app.service.PresenceService;
 import com.agnostik.agnostik_app.service.SnapshotNotifierService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Map;
 import java.util.Set;
 
 @RestController
 @RequestMapping("/api/requests")
 @RequiredArgsConstructor
+@Tag(name = "Requests", description = "Friend request commands; UI updates via WebSocket events")
 public class EphemeralRequestsRestController {
 
     private final EphemeralRequestService ephemeralRequestService;
@@ -26,6 +34,17 @@ public class EphemeralRequestsRestController {
     private final SnapshotNotifierService snapshotNotifierService;
 
     @PostMapping("/send/{direction}")
+    @Operation(
+            summary = "Send friend request",
+            description = "Sends a friend request to left/right neighbor. State changes are observed via WebSocket events.",
+            security = { @SecurityRequirement(name = "bearer-jwt") },
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Request sent"),
+                    @ApiResponse(responseCode = "400", description = "No neighbor found",
+                            content = @Content(schema = @Schema(implementation = ResponseMessageDTO.class))),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized")
+            }
+    )
     public ResponseEntity<?> sendRequest(
             @AuthenticationPrincipal UserReadOnlyDTO me,
             @PathVariable String direction){
@@ -40,6 +59,17 @@ public class EphemeralRequestsRestController {
     }
 
     @PostMapping("/cancel/{direction}")
+    @Operation(
+            summary = "Cancel friend request",
+            description = "Cancels an outgoing friend request. UI syncs via WebSocket events.",
+            security = { @SecurityRequirement(name = "bearer-jwt") },
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Request cancelled"),
+                    @ApiResponse(responseCode = "400", description = "No neighbor found",
+                            content = @Content(schema = @Schema(implementation = ResponseMessageDTO.class))),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized")
+            }
+    )
     public ResponseEntity<?> cancelRequest(
             @AuthenticationPrincipal UserReadOnlyDTO me,
             @PathVariable String direction){
@@ -56,6 +86,17 @@ public class EphemeralRequestsRestController {
 
 
     @PostMapping("/accept/{direction}")
+    @Operation(
+            summary = "Accept friend request",
+            description = "Accepts incoming request, creates friendship, locks both users. State via WebSocket events.",
+            security = { @SecurityRequirement(name = "bearer-jwt") },
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Friendship created"),
+                    @ApiResponse(responseCode = "400", description = "No neighbor found",
+                            content = @Content(schema = @Schema(implementation = ResponseMessageDTO.class))),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized")
+            }
+    )
     public ResponseEntity<?> acceptRequest(
             @AuthenticationPrincipal UserReadOnlyDTO me,
             @PathVariable String direction){
@@ -78,6 +119,17 @@ public class EphemeralRequestsRestController {
     }
 
     @PostMapping("/reject/{direction}")
+    @Operation(
+            summary = "Reject friend request",
+            description = "Rejects incoming request. UI state via WebSocket events.",
+            security = { @SecurityRequirement(name = "bearer-jwt") },
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Request rejected"),
+                    @ApiResponse(responseCode = "400", description = "No neighbor found",
+                            content = @Content(schema = @Schema(implementation = ResponseMessageDTO.class))),
+                    @ApiResponse(responseCode = "401", description = "Unauthorized")
+            }
+    )
     public ResponseEntity<?> rejectRequest(
             @AuthenticationPrincipal UserReadOnlyDTO me,
             @PathVariable String direction) {
