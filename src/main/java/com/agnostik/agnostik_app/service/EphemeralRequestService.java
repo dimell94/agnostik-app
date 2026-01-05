@@ -1,5 +1,6 @@
 package com.agnostik.agnostik_app.service;
 
+import com.agnostik.agnostik_app.core.exception.AppObjectInvalidArgumentException;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -44,15 +45,15 @@ public class EphemeralRequestService {
         boolean areFriends = friendshipService.areFriends(senderId, receiverId);
 
         if (!adjacent){
-            throw new IllegalStateException("NOT_ADJACENT");
+            throw new AppObjectInvalidArgumentException("NOT_ADJACENT", "Users are not adjacent");
         }
 
         if (areFriends){
-            throw new IllegalArgumentException("ALREADY_FRIENDS");
+            throw new AppObjectInvalidArgumentException("ALREADY_FRIENDS", "Users are already friends");
         }
 
         if (!presenceService.isLocked(senderId) || !presenceService.isLocked(receiverId)){
-            throw new IllegalStateException("NOT_LOCKED");
+            throw new AppObjectInvalidArgumentException("NOT_LOCKED", "Both users must be locked");
         }
 
         String k = key(senderId, receiverId);

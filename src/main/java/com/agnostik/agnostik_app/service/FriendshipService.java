@@ -2,6 +2,7 @@ package com.agnostik.agnostik_app.service;
 
 import com.agnostik.agnostik_app.core.exception.AppObjectAlreadyExistsException;
 import com.agnostik.agnostik_app.core.exception.AppObjectInvalidArgumentException;
+import com.agnostik.agnostik_app.core.exception.AppObjectNotFoundException;
 import com.agnostik.agnostik_app.model.Friendship;
 import com.agnostik.agnostik_app.model.User;
 import com.agnostik.agnostik_app.repository.FriendshipRepository;
@@ -39,10 +40,10 @@ public class FriendshipService {
         }
 
         User user1 = userRepository.findById(smallerId)
-                .orElseThrow(() -> new IllegalArgumentException("USER1_NOT_FOUND"));
+                .orElseThrow(() -> new AppObjectNotFoundException("USER1_NOT_FOUND"));
 
         User user2 = userRepository.findById(largerId)
-                .orElseThrow(() -> new IllegalArgumentException("USER2_NOT_FOUND"));
+                .orElseThrow(() -> new AppObjectNotFoundException("USER2_NOT_FOUND"));
 
         Friendship friendship = new Friendship();
         friendship.setUser1(user1);
