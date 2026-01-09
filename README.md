@@ -13,7 +13,7 @@
 - Gradle 8.14.3
 
 ## Quick Start (Local)
-- Clone: `git clone <repo> && cd agnostik-app`
+- Clone: `git clone https://github.com/dimell94/agnostik-app.git && cd agnostik-app`
 - Start MySQL (example Docker): `docker run -p 3306:3306 -e MYSQL_ROOT_PASSWORD=pass -e MYSQL_DATABASE=agnostik_db mysql:8`
 - Configure env (optional; defaults below): `export MYSQL_USER=user38 MYSQL_PASSWORD=mitsos ...`
 - Build: `./gradlew clean build`
@@ -32,4 +32,4 @@
 
 ## Profiles & Persistence
 - Default profile `dev` loads `application-dev.properties` (uses the env placeholders above).
-- Switch DB/port via env or custom `application-*.properties` (JDBC URL, credentials, `server.port`).
+- Switch DB/port via env or custom `application-*.properties` (JDBC URL, credentials, `server.port`). If you change database vendor, add the matching JDBC driver (and Spring Data starter if needed) to `build.gradle`; only MySQL is included by default.
