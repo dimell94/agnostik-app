@@ -1,0 +1,38 @@
+version: "3.9"
+
+services:
+  db:
+    image: mysql:8
+    container_name: agnostik-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: pass
+      MYSQL_DATABASE: agnostik_db
+      MYSQL_USER: agnostik_user
+      MYSQL_PASSWORD: agnostik_pass
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-ppass"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    container_name: agnostik-app
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      MYSQL_HOST: db
+      MYSQL_PORT: 3306
+      MYSQL_DB: agnostik_db
+      MYSQL_USER: agnostik_user
+      MYSQL_PASSWORD: agnostik_pass
+    ports:
+      - "8080:8080"
+
+volumes:
+  db_data:
