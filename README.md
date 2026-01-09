@@ -19,7 +19,7 @@
 ## Quick Start (Local)
 - Clone: `git clone https://github.com/dimell94/agnostik-app.git && cd agnostik-app`
 - Start MySQL (example Docker): `docker run -p 3306:3306 -e MYSQL_ROOT_PASSWORD=pass -e MYSQL_DATABASE=agnostik_db mysql:8`
-- Configure env (optional; defaults below): `export MYSQL_USER=user38 MYSQL_PASSWORD=mitsos ...`
+- Configure enviroment variables
 - Build: `./gradlew clean build`
 - Run: `java -jar ./build/libs/agnostik-app-0.0.1-SNAPSHOT.jar` (or `./gradlew bootRun` for dev)
 - App serves at `http://localhost:8080` 
