@@ -15,25 +15,18 @@
 ## General Requirements
 - Java 17 (tested with Amazon Corretto 17.0.15_6)
 - Gradle 8.14.3
+- Docker
 
-## Quick Start (Local)
-- Clone: `git clone https://github.com/dimell94/agnostik-app.git && cd agnostik-app`
-- Start MySQL (example Docker): `docker run -p 3306:3306 -e MYSQL_ROOT_PASSWORD=pass -e MYSQL_DATABASE=agnostik_db mysql:8`
-- Configure enviroment variables
-- Build: `./gradlew clean build`
-- Run: `java -jar ./build/libs/agnostik-app-0.0.1-SNAPSHOT.jar` (or `./gradlew bootRun` for dev)
-- App serves at `http://localhost:8080` 
+## Quick Start via CLI
+```bash
+   git clone https://github.com/dimell94/agnostik-app.git
+   cd agnostik-app
+   docker compose build 
+   docker compose up -d
+   ```
 
-## Environment Variables
-- `MYSQL_HOST` 
-- `MYSQL_PORT` 
-- `MYSQL_DB` 
-- `MYSQL_USER` 
-- `MYSQL_PASSWORD` 
 
 ## API & WebSocket
 - Swagger UI: `http://localhost:8080/swagger-ui/index.html`
 
-## Profiles & Persistence
-- Default profile `dev` loads `application-dev.properties` (uses the env placeholders above).
-- Switch DB/port via env or custom `application-*.properties` (JDBC URL, credentials, `server.port`). If you change database vendor, add the matching JDBC driver (and Spring Data starter if needed) to `build.gradle`; only MySQL is included by default.
+
