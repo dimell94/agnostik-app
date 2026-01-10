@@ -22,8 +22,9 @@
       cd agnostik-app
       docker compose build 
       docker compose up -d
-      ```
+   ```
    (After starting the backend, see the frontend README to run the full stack and open the frontend URL in your browser. See the bot runner README to add demo users.)
+
 
 ## API Documentation
 - Swagger UI: http://localhost:8080/swagger-ui/index.html
