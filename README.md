@@ -1,4 +1,5 @@
 # Agnostik Backend
+### Stack: Spring Boot (Java 17) · Gradle · MySQL · JPA · Spring Security/JWT · WebSocket/STOMP
 
 - Real-time, corridor-style social network where users text live with their immediate neighbors.
 - After register/login, each user enters a shared corridor; the text area sits center stage and can be focused/unfocused via click or Esc.
@@ -13,20 +14,19 @@
 - Bot runner for demo users: https://github.com/dimell94/agnostik-bot-runner#readme
 
 ## General Requirements
-- Java 17 (tested with Amazon Corretto 17.0.15_6)
-- Gradle 8.14.3
 - Docker
 
 ## Quick Start via CLI
-```bash
-   git clone https://github.com/dimell94/agnostik-app.git
-   cd agnostik-app
-   docker compose build 
-   docker compose up -d
-   ```
+   ```bash
+      git clone https://github.com/dimell94/agnostik-app.git
+      cd agnostik-app
+      docker compose build 
+      docker compose up -d
+      ```
+   (After starting the backend, see the frontend README to run the full stack and open the frontend URL in your browser. See the bot runner README to add demo users.)
 
+## API Documentation
+- Swagger UI: http://localhost:8080/swagger-ui/index.html
 
-## API & WebSocket
-- Swagger UI: `http://localhost:8080/swagger-ui/index.html`
 
 
