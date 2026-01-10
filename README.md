@@ -16,7 +16,7 @@
 ## General Requirements
 - Docker
 
-## Quick Start via CLI
+## Run via the CLI
    ```bash
       git clone https://github.com/dimell94/agnostik-app.git
       cd agnostik-app
