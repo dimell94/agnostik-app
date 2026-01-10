@@ -1,5 +1,5 @@
 # Agnostik Backend
-### Stack: Spring Boot (Java 17) · Gradle · MySQL · JPA · Spring Security/JWT · WebSocket/STOMP
+### Stack: Spring Boot (Java 17) · Gradle · MySQL · JPA · Spring Security/JWT ·REST API ·WebSocket/STOMP
 
 - Real-time, corridor-style social network where users text live with their immediate neighbors.
 - After register/login, each user enters a shared corridor; the text area sits center stage and can be focused/unfocused via click or Esc.
