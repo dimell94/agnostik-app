@@ -2,7 +2,7 @@
 
 ## Agnostik: An Experimental Social Network of Live Written Presence
 
-Agnostik is an experimental social platform built around live written presence. **Its goal is to make identity dynamic, allowing it to emerge through spontaneous expression rather than through a fixed, curated social image.** Presence unfolds in real time through writing, whether that writing is conversational, reflective, improvisational, or simply a way of being present.
+Agnostik is an experimental social platform built around live written presence. Its goal is to make identity dynamic, allowing it to emerge through spontaneous expression rather than through a fixed, curated social image. There are no publicly visible usernames or other identifying markers inside the experience. Presence unfolds in real time through writing, whether that writing is conversational, reflective, improvisational, or simply a way of being present.
 
 ### Core Idea 📦
 
