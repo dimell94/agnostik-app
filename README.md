@@ -6,7 +6,7 @@ Agnostik is an experimental social platform built around live written presence. 
 
 ### Core Idea 📦
 
-When a user enters Agnostik, they are placed inside a shared digital corridor. **Each user sees their own writing space in the center and only two immediate neighbors, one on the left and one on the right.** Interaction is therefore based on proximity rather than feeds or algorithmic distribution.
+When a user enters Agnostik, they are placed inside a shared digital corridor. **Each user sees their own writing space in the center and only two immediate neighbors, one on the left and one on the right.**
 
 **There is no send button.** **Text appears live, character by character, as it is being typed.** This allows nearby users to witness writing in real time.
 
