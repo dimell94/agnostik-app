@@ -125,7 +125,7 @@ public class PresenceService {
             }
 
             int j = i - 1;
-            while(j > 0 && locked.getOrDefault(corridor.get(j), false)){
+            while(j >= 0 && locked.getOrDefault(corridor.get(j), false)){
                 j--;
             }
 
